@@ -205,6 +205,20 @@
     --font-heading: var(--font-sans);
     --font-heading-weight: 600;
 
+    /* Documentation reader (Figma node 5543:28414): the knowledge base in the
+       Learning app and the public docs site. Scoped names so reading surfaces
+       share one exact contract without changing operational app UI. */
+    --docs-accent: 20 99% 50%;
+    --docs-foreground: 0 0% 7.1%;
+    --docs-muted-foreground: 180 1% 38%;
+    --docs-surface: 210 20% 98%;
+    --docs-border: 0 0% 94.9%;
+    --docs-control-radius: 3px;
+    --docs-card-radius: 16px;
+    --docs-header-shadow: 0 1px 1.5px rgb(0 0 0 / 0.05);
+    --docs-sidebar-shadow: 0 17px 40px 4px rgb(112 144 176 / 0.05);
+    --docs-card-shadow: 2px 2px 2.5px rgb(0 0 0 / 0.04);
+
     /* Transition Tokens */
     --transition-instant: 0ms;
     --transition-fast: 100ms;
