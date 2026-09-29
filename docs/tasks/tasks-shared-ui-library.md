@@ -47,10 +47,10 @@ Gate: training deployed and screenshotted on production.
 
 ## P2 — Main app onto the package
 
-- [ ] AUI-020 (pushed `af891fb7d1`, waiting on the production release): `frontend/src/components/ui/*` shared primitives become re-exports of `@alleato/ui` (import paths unchanged); tokens from the package; duplicate token blocks deleted. **Done when:** before/after screenshots of 6 representative pages are identical. Effort: L
+- [x] AUI-020: `frontend/src/components/ui/*` shared primitives become re-exports of `@alleato/ui` (import paths unchanged); tokens from the package; duplicate token blocks deleted. **Done when:** before/after screenshots of 6 representative pages are identical. Effort: L Evidence: `af891fb7d1` live in production release `da06517bab`; /67/home and /67/budget pixel-identical to pre-change production; /67/commitments differs only by the table-toolbar consolidation from `159a55109c` (another session, same release).
 - [x] AUI-021: Guardrail — a check fails when a shared primitive in `components/ui` is anything but a re-export. **Done when:** the check runs in CI and fails on a forked copy. Effort: S Evidence: `shared-ui-package.test.ts` in frontend and training (re-export shape + no page-wide token redefinition); both mutations (re-forked badge.tsx, `:root { --primary }` in globals.css) turn it red. Runs in quality-gate full-suite and training-tests.
 
-Gate: main app deployed, screenshots match.
+Gate: main app deployed, screenshots match. PASSED 2026-09-29.
 
 ## P3 — ASRS onto the package
 
