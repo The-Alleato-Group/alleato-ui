@@ -16,6 +16,62 @@ function ruleBody(css: string, className: string) {
   return match?.[1].trim();
 }
 
+type Hsl = [number, number, number];
+
+function darkTokens(): string {
+  const tokens = readFileSync(path.join(root, "styles/tokens.css"), "utf8");
+  const start = tokens.indexOf("  .dark {");
+  if (start === -1) throw new Error("dark token block not found");
+  return tokens.slice(start);
+}
+
+function readHslToken(scope: string, name: string): Hsl {
+  const match = scope.match(
+    new RegExp(
+      `--${name}:\\s*(?:hsl\\()?([\\d.]+)\\s+([\\d.]+)%\\s+([\\d.]+)%`,
+    ),
+  );
+  if (!match) throw new Error(`--${name} must be a direct HSL token`);
+  return [Number(match[1]), Number(match[2]), Number(match[3])];
+}
+
+function luminance([r, g, b]: [number, number, number]): number {
+  const linear = [r, g, b].map((value) => {
+    const channel = value / 255;
+    return channel <= 0.04045
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+}
+
+function contrast(a: Hsl, b: Hsl): number {
+  const toRgb = ([h, s, l]: Hsl): [number, number, number] => {
+    const saturation = s / 100;
+    const lightness = l / 100;
+    const chroma = (1 - Math.abs(2 * lightness - 1)) * saturation;
+    const second = chroma * (1 - Math.abs(((h / 60) % 2) - 1));
+    const match = lightness - chroma / 2;
+    const channels =
+      h < 60
+        ? [chroma, second, 0]
+        : h < 120
+          ? [second, chroma, 0]
+          : h < 180
+            ? [0, chroma, second]
+            : h < 240
+              ? [0, second, chroma]
+              : h < 300
+                ? [second, 0, chroma]
+                : [chroma, 0, second];
+    return channels.map((channel) => Math.round((channel + match) * 255)) as [number, number, number];
+  };
+  const [high, low] = [luminance(toRgb(a)), luminance(toRgb(b))].sort(
+    (left, right) => right - left,
+  );
+  return (high + 0.05) / (low + 0.05);
+}
+
 // Values read from production CSS (projects.alleatogroup.com, 2026-09-29).
 // The package must generate the same declarations the main app ships today.
 const PRODUCTION: Record<string, string> = {
@@ -84,5 +140,39 @@ describe("theme.css", () => {
   it("scans the package's own components", async () => {
     const theme = readFileSync(path.join(root, "styles/theme.css"), "utf8");
     expect(theme).toContain('@source "../src"');
+  });
+});
+
+describe("dark semantic token contrast", () => {
+  const dark = darkTokens();
+
+  it.each(["foreground", "muted-foreground", "primary", "status-error"])(
+    "%s clears 4.5:1 on the carbon canvas",
+    (token) => {
+      expect(
+        contrast(readHslToken(dark, token), readHslToken(dark, "background")),
+      ).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+
+  it("keeps filled actions and sidebar navigation legible", () => {
+    expect(
+      contrast(
+        readHslToken(dark, "primary-foreground"),
+        readHslToken(dark, "primary"),
+      ),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrast(
+        readHslToken(dark, "destructive-foreground"),
+        readHslToken(dark, "status-error"),
+      ),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrast(
+        readHslToken(dark, "sidebar-foreground"),
+        readHslToken(dark, "sidebar"),
+      ),
+    ).toBeGreaterThanOrEqual(4.5);
   });
 });

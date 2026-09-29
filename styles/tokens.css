@@ -410,8 +410,10 @@
     --background-secondary: 240 5% 13%;
     --surface-summary: 240 5% 16%;
     --right-sidebar-bg: 240 6% 9%;
-    --primary: 29 90% 61%;
-    --primary-foreground: 0 0% 100%;
+    /* Dark-mode accent text must clear the charcoal canvas, while filled
+       controls need dark ink rather than low-contrast white. */
+    --primary: 29 90% 68%;
+    --primary-foreground: 240 6% 10%;
     --button-primary: 60 9% 96%;
     --button-primary-foreground: 240 6% 10%;
     --action: 215 40% 52%;
@@ -420,20 +422,22 @@
     --secondary-foreground: 0 0% 92%;
     --muted: 240 5% 16%;
     --muted-subtle: 240 5% 12%;
-    --muted-foreground: 0 0% 58%;
+    /* 58% gray was 4.29:1 on the carbon canvas. These labels include page
+       preheadings, header controls, and supporting navigation. */
+    --muted-foreground: 0 0% 68%;
     --input-placeholder: 0 0% 48%;
     --heading-label: 0 0% 72%;
     --accent: 240 5% 16%;
     --accent-foreground: 0 0% 95%;
     --light: 28 69% 18%;
     --destructive: var(--status-error);
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 240 6% 10%;
     --border: 240 5% 19%;
     --input: 240 4% 28%;
     --ring: 240 5% 35%;
 
 
-    --chart-1: 29 90% 61%;
+    --chart-1: var(--primary);
     --chart-2: 160 60% 45%;
     --chart-3: 38 80% 55%;
     --chart-4: 29 92% 53%;
@@ -453,7 +457,7 @@
     --viz-seq-4: 28.5 73% 60.5%;
     --viz-seq-5: 29 74% 72%;
 
-    --brand: 29 90% 61%;
+    --brand: var(--primary);
     --brand-hover: 29 92% 68%;
     --brand-light: 28 69% 16%;
 
@@ -466,7 +470,9 @@
     --status-warning: 38 92% 55%;
     --status-warning-bg: 38 32% 15%;
     --status-warning-border: 38 45% 34%;
-    --status-error: 0 72% 55%;
+    /* Status text is often 12px. The former red was 2.98:1 on --background;
+       this accessible tint clears 4.5:1 without reading as orange. */
+    --status-error: 0 72% 70%;
     --status-error-bg: 0 32% 15%;
     --status-error-border: 0 45% 34%;
     --status-info: 217 91% 65%;
@@ -488,13 +494,13 @@
     --band-negative: 8 75% 76%;
 
     --sidebar: hsl(240 6% 9%);
-    --sidebar-foreground: hsl(0 0% 85%);
-    --sidebar-primary: hsl(29 90% 61%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-foreground: hsl(0 0% 90%);
+    --sidebar-primary: hsl(var(--primary));
+    --sidebar-primary-foreground: hsl(var(--primary-foreground));
     --sidebar-accent: hsl(240 5% 16%);
     --sidebar-accent-foreground: hsl(0 0% 92%);
     --sidebar-border: hsl(240 5% 19%);
-    --sidebar-ring: hsl(29 90% 61%);
+    --sidebar-ring: hsl(var(--primary));
 
     /* A dark canvas swallows a light shadow, so the dark edge stays a little
        deeper than the light one -- but nowhere near the old 0.75 alpha, which
