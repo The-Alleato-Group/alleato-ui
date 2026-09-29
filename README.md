@@ -8,9 +8,8 @@ version bump.
 | App | Uses |
 | --- | --- |
 | Alleato OS (`projects.alleatogroup.com`) | tokens + components |
-| Learning app (`training/`) | tokens + components |
-| ASRS estimator | tokens + components |
-| Docs (`docs.alleatogroup.com`, Mintlify) | tokens only — Mintlify cannot install packages |
+| Learning app (`training/`: `/training`, `/content`, `/knowledge`, `/docs`) | tokens + components |
+| ASRS estimator | tokens (components after it adopts Tailwind 4) |
 
 ## Install
 
@@ -84,6 +83,18 @@ Optional peers, needed only for the component that uses them: `recharts`
 - An app does not keep its own copy of a component in this package. If it
   needs a variant, add the variant here.
 - Every token change is checked against production by `test/theme.test.ts`.
+
+## Keeping the package in step with the main app
+
+Until the main app imports this package (plan AUI-020), the main app is still
+where components are edited. Copy its current versions here with:
+
+```bash
+node scripts/sync-from-app.mjs <project-management checkout at origin/main>
+```
+
+It fails loudly if a component, the token block, or one of the package's own
+edits can no longer be found.
 
 ## Develop and release
 

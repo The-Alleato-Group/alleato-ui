@@ -134,12 +134,16 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   );
 }
 
+// Column headers are sentence case, never all caps or letter-spaced
+// (DESIGN.md s3, owner 2026-09-23). A <button> inside a header resets
+// text-transform by UA default, which hid an `uppercase` here for every
+// header without a context menu.
 function TableHead({ className, ...props }: React.ComponentProps<"th">) {
   return (
     <th
       data-slot="table-head"
       className={cn(
-        "text-foreground px-3 pb-2.5 pt-2.5 text-left align-middle text-[10px] font-semibold uppercase tracking-[0.04em] whitespace-nowrap sm:px-4 [&:has([role=checkbox])]:overflow-visible [&>[role=checkbox]]:translate-y-[2px]",
+        "text-foreground px-3 pb-2.5 pt-2.5 text-left align-middle text-[10px] font-semibold whitespace-nowrap sm:px-4 [&:has([role=checkbox])]:overflow-visible [&>[role=checkbox]]:translate-y-[2px]",
         className,
       )}
       {...props}

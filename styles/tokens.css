@@ -17,6 +17,7 @@
 
 @layer base {
   :root {
+
     /* ================================================================
        TIER 0 — PRIMITIVE COLOR PALETTE
        Raw HSL values only. Nothing else should use these directly.
@@ -74,7 +75,12 @@
     --card-foreground: var(--neutral-900);
     --popover: 0 0% 100%;
     --popover-foreground: var(--neutral-900);
-    --surface-alt: var(--neutral-50);
+    /* The page canvas behind white cards on a detail composition (prime
+       contract, commitment). #F4F4F5 — the mockup's pageBg. It was
+       var(--neutral-50) = #ffffff, so DESIGN.md's "white Card surfaces on
+       the tinted bg-surface-alt canvas" rendered white-on-white and the
+       cards had no edge (owner, 2026-09-23). */
+    --surface-alt: 240 5% 96%;
     --surface-soft: var(--neutral-100);
     /* Secondary working surface (#F9FAFB). Use for quiet, grouped context. */
     --background-secondary: 210 20% 98.04%;
@@ -130,6 +136,7 @@
     --border: var(--neutral-300);
     --input: var(--neutral-400);
     --ring: var(--neutral-400);
+
 
     /* Chart Colors */
     --chart-1: var(--brand-orange-500);
@@ -398,6 +405,8 @@
     --popover: 240 5% 18%;
     --popover-foreground: 0 0% 92%;
     --surface-soft: 240 5% 18%;
+    /* Darker than --background (the Card ground) so cards still read as raised. */
+    --surface-alt: 240 6% 13%;
     --background-secondary: 240 5% 13%;
     --surface-summary: 240 5% 16%;
     --right-sidebar-bg: 240 6% 9%;
@@ -422,6 +431,7 @@
     --border: 240 5% 19%;
     --input: 240 4% 28%;
     --ring: 240 5% 35%;
+
 
     --chart-1: 29 90% 61%;
     --chart-2: 160 60% 45%;

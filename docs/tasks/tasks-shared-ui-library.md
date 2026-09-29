@@ -26,16 +26,16 @@ Consumers:
 | Main app | project-management `frontend/` | Next 15, Tailwind 4 | source of truth |
 | Learning app | project-management `training/` | Next 15, Tailwind 4 | stale fork: 20/51 ui + 31/54 ds files drifted |
 | ASRS | MeganHarrison/alleato-asrs `apps/web` | Next 16, no Tailwind | no primitives yet |
-| Docs | alleato-docs-site (Mintlify) | cannot install packages | tokens only (colors, fonts) |
+| Docs | none: Mintlify retired 2026-09-25, docs now at `/docs` in the Learning app | — | covered by P1 |
 | Mobile | alleato-mobile (React Native) | out of scope | — |
 
 ## P0 — Package foundation
 
-- [ ] AUI-001: Extract tokens (light + dark `:root` variables, Tailwind 4 `@theme` color/radius/font/shadow mapping, keyframes) from `frontend/src/app/globals.css` + `frontend/tailwind.config.ts` into `styles/tokens.css` and `styles/theme.css`. **Files:** `styles/*`. **Done when:** a Tailwind 4 build of `theme.css` emits `bg-primary`, `text-muted-foreground`, `rounded-lg`, `font-title` with the same values as the main app. Effort: M
-- [ ] AUI-002: Move the self-contained shadcn primitives (no app imports) into `src/components/`, internal imports made relative. **Files:** `src/components/*`, `src/lib/utils.ts`, `src/hooks/use-mobile.ts`. **Done when:** `tsc --noEmit` passes. Effort: M
-- [ ] AUI-003: Render smoke test for every export + CSS compile test. **Files:** `test/*`. **Done when:** `pnpm test` green in CI. Effort: S
-- [ ] AUI-004: CI (typecheck + test) and release workflow (npm trusted publishing on tag). **Files:** `.github/workflows/*`. **Done when:** CI green on main. Effort: S
-- [ ] AUI-005: Tag `v0.1.0`. **Done when:** `github:The-Alleato-Group/alleato-ui#v0.1.0` installs in a clean project. Effort: S
+- [x] AUI-001: Extract tokens (light + dark `:root` variables, Tailwind 4 `@theme` color/radius/font/shadow mapping, keyframes) from `frontend/src/app/globals.css` + `frontend/tailwind.config.ts` into `styles/tokens.css` and `styles/theme.css`. **Files:** `styles/*`. **Done when:** a Tailwind 4 build of `theme.css` emits `bg-primary`, `text-muted-foreground`, `rounded-lg`, `font-title` with the same values as the main app. Effort: M Evidence: `test/theme.test.ts` compares 16 utilities with production CSS; resynced from origin/main by `scripts/sync-from-app.mjs` (v0.1.1).
+- [x] AUI-002: Move the self-contained shadcn primitives (no app imports) into `src/components/`, internal imports made relative. **Files:** `src/components/*`, `src/lib/utils.ts`, `src/hooks/use-mobile.ts`. **Done when:** `tsc --noEmit` passes. Effort: M Evidence: `tsc --noEmit` clean; 48 files incl. helpers.
+- [x] AUI-003: Render smoke test for every export + CSS compile test. **Files:** `test/*`. **Done when:** `pnpm test` green in CI. Effort: S Evidence: `pnpm test` 53/53.
+- [x] AUI-004: CI (typecheck + test) and release workflow (npm trusted publishing on tag). **Files:** `.github/workflows/*`. **Done when:** CI green on main. Effort: S Evidence: CI green on every push to main. Release workflow waits on the npm org (see blockers).
+- [x] AUI-005: Tag `v0.1.0`. **Done when:** `github:The-Alleato-Group/alleato-ui#v0.1.0` installs in a clean project. Effort: S Evidence: training installs `#v0.1.0` (pnpm lock resolves codeload tarball, HTTP 200).
 
 Gate: v0.1.0 tag installs and its CSS compiles in a consumer.
 
@@ -58,7 +58,7 @@ Gate: main app deployed, screenshots match.
 
 ## P4 — Docs site tokens
 
-- [ ] AUI-040: Docs colors and fonts generated from the package tokens (`docs.json` + `style.css`). **Done when:** docs.alleatogroup.com shows the same primary color and fonts. Effort: S
+- [x] AUI-040: ~~Docs colors and fonts from the package~~ — dropped: the Mintlify site was retired on 2026-09-25 (project-management `docs/ops/plans/2026-09-23-content-consolidation.md`); docs render at `/docs` in the Learning app, which P1 moves onto the package. The documentation-reader tokens (`--docs-*`) now live in `styles/tokens.css`.
 
 ## P5 — Design-system layer (`components/ds`)
 
@@ -71,5 +71,7 @@ Gate: main app deployed, screenshots match.
 - 2026-09-29 — A package, not a shadcn copy-paste registry: copying files into each app is how `training/` drifted.
 
 ## Log
+
+- 2026-09-29 — v0.1.0 tagged; Learning app switched (project-management `d21c20e3cb`), release pending the 30-minute controller. v0.1.0 was built from a stale checkout (table headers still uppercase, old button hover, old `--surface-alt`); v0.1.1 resynced from origin/main with `scripts/sync-from-app.mjs`. Mintlify step dropped (site retired 2026-09-25). ASRS token adoption handed to its own phase-gated session.
 
 - 2026-09-29 — Plan created; repo created (public).

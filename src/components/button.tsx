@@ -22,7 +22,7 @@ const buttonVariants = cva(
         // Unauthenticated surfaces only — sign-in, password reset. Inside the
         // app shell the labeled primary action stays near-ink.
         brand:
-          "bg-primary text-primary-foreground shadow-xs hover:bg-primary/90 active:bg-primary/95",
+          "bg-primary text-primary-foreground shadow-xs hover:brightness-95 active:brightness-90",
         action:
           "bg-action text-action-foreground shadow-xs hover:bg-action/90 active:bg-action/80 focus-visible:ring-action/25",
         inverse:
