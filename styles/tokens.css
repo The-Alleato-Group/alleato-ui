@@ -1,0 +1,489 @@
+/* ============================================================================
+   @alleato/ui — design tokens
+   ----------------------------------------------------------------------------
+   Every Alleato web app reads its colors, radii, fonts, shadows and motion
+   from these variables. Light values on :root, dark values on .dark.
+
+   Colors are bare HSL triplets ("29 71% 52%") so a consumer can apply
+   opacity: hsl(var(--primary) / 0.12).
+
+   Plain CSS: no Tailwind directives, so a site that cannot run Tailwind (the
+   Mintlify docs) can still import it. Tailwind apps import theme.css, which
+   imports this file.
+
+   Source: The-Alleato-Group/project-management frontend/src/app/globals.css
+   (2026-09-29). Change values HERE; the apps no longer own them.
+   ============================================================================ */
+
+@layer base {
+  :root {
+    /* ================================================================
+       TIER 0 — PRIMITIVE COLOR PALETTE
+       Raw HSL values only. Nothing else should use these directly.
+       All semantic tokens below MUST reference a primitive.
+       Changing a primitive here propagates everywhere instantly.
+       ================================================================ */
+
+    /* Alleato brand scale */
+    --brand-orange-400: 29 90% 61%;
+    --brand-orange-500: 29 71% 52%;
+    --brand-orange-600: 28 69% 45%;
+    --brand-orange-700: 26 70% 36%;
+    --brand-orange-50: 29 84% 95%;
+    --brand-orange-100: 28 83% 91%;
+
+    /* Neutral scale */
+    --neutral-50: 0 0% 100%;
+    /* 97%, not 95%: this gray is the hover and muted surface everywhere, and
+       at 95% the owner called the row hover "way too dark" (2026-09-23). */
+    --neutral-100: 0 0% 97%;
+    --neutral-150: 0 0% 93%;
+    --neutral-200: 240 5% 91%;
+    --neutral-300: 0 0% 90%;
+    --neutral-400: 0 0% 72%;
+    --neutral-500: 240 4% 54%;
+    --neutral-600: 180 1% 38%;
+    --neutral-700: 240 6% 25%;
+    --neutral-800: 0 0% 20%;
+    --neutral-900: 240 6% 10%;
+
+    /* Carbon scale (dark surfaces) */
+    --carbon-800: 240 5% 13%;
+    --carbon-900: 240 6% 10%;
+
+    /* Semantic status primitives */
+    --green-500: 152 69% 37%;
+    --green-600: 152 69% 30%;
+    --amber-500: 38 92% 50%;
+    --red-500: 0 72% 51%;
+    --red-600: 0 72% 42%;
+    --blue-500: 217 91% 60%;
+
+    /* Legacy orange aliases */
+    --orange-500: var(--brand-orange-500);
+    --orange-600: var(--brand-orange-600);
+
+    /* ================================================================
+       SNOW THEME (Light) — Superhuman-inspired v2
+       ================================================================ */
+
+    /* Core Surface Colors */
+    --background: 0 0% 100%;
+    --foreground: var(--neutral-900);
+    --card: 0 0% 100%;
+    --card-foreground: var(--neutral-900);
+    --popover: 0 0% 100%;
+    --popover-foreground: var(--neutral-900);
+    --surface-alt: var(--neutral-50);
+    --surface-soft: var(--neutral-100);
+    /* Secondary working surface (#F9FAFB). Use for quiet, grouped context. */
+    --background-secondary: 210 20% 98.04%;
+    /* Lightest gray panel surface (#FAFAFA), owned by <SummaryPanel> alone
+       (sidebar rollups): 10px radius, 30px inset. <DetailPanel> is unfilled
+       (Megan, 2026-09-04) and therefore uninset (Megan, 2026-09-20): a 30px
+       pad on an edgeless block is only a second gutter that pushes one
+       section out of line with its flush siblings. */
+    --surface-summary: 0 0% 98.04%;
+    --panel-radius: 10px;
+    --panel-padding: 30px;
+    --summary-panel-padding: var(--panel-padding);
+    --right-sidebar-bg: 0 0% 100%;
+
+    /* Primary Accent — Alleato brand orange */
+    --primary: var(--brand-orange-500);
+    --primary-foreground: 0 0% 100%;
+    /* The labeled primary button is near-ink, not orange (owner, 2026-09-17:
+       "black buttons now or almost black ... no orange button"). Orange stays
+       the accent: selection, the title rule, the active tab.
+       #1d1d1d, not #262626 and never #000 (owner, 2026-09-23: "almost black
+       but not quite black"). */
+    --button-primary: 0 0% 11.4%;
+    --button-primary-foreground: 0 0% 100%;
+
+    /* Product action accent — aligned with the established slate-blue hierarchy. */
+    --action: 215 25% 31%;
+    --action-foreground: 0 0% 100%;
+
+    /* Secondary */
+    --secondary: var(--neutral-100);
+    --secondary-foreground: var(--neutral-900);
+
+    /* Muted */
+    --muted: var(--neutral-100);
+    --muted-subtle: var(--neutral-50);
+    --muted-foreground: var(--neutral-600);
+    /* Shared non-semantic heading accent — darkened slate (#2a384b) so every
+       section label (Eyebrow, SectionRuleHeading, .text-label-uppercase, etc.)
+       reads with confident contrast on white instead of a washed-out gray. */
+    --heading-label: 215 28% 23%;
+
+    /* Accent — neutral gray for command/dropdown highlights (sidebar uses its own token) */
+    --accent: var(--neutral-100);
+    --accent-foreground: var(--neutral-900);
+    --light: var(--brand-orange-50);
+
+    /* Destructive */
+    --destructive: var(--status-error);
+    --destructive-foreground: 0 0% 100%;
+
+    /* Structural */
+    --border: var(--neutral-300);
+    --input: var(--neutral-400);
+    --ring: var(--neutral-400);
+
+    /* Chart Colors */
+    --chart-1: var(--brand-orange-500);
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 29 92% 53%;
+    --chart-5: 152 69% 37%;
+
+    /* ----------------------------------------------------------------
+       Data-visualization palette (validated).
+
+       Separate from --chart-1..5 above, which FAILS the colorblind and
+       chroma checks in scripts/validate_palette.js: --chart-3 (197 37% 24%)
+       reads as gray, and --chart-4 vs --chart-5 sit at deltaE 6.6 under
+       protanopia -- indistinguishable. Migrating every existing chart is
+       tracked separately; new charts use these.
+
+       Categorical hues are assigned in FIXED ORDER and never cycled. A
+       chart needing a 4th series folds into "Other", facets, or a second
+       encoding -- it does not invent a hue.
+
+       Verified with the six checks (lightness band, chroma floor, CVD
+       separation, normal-vision floor, contrast vs surface) in both modes:
+         light #c26d24,#1d51a5,#188150 on #fcfcfb -- ALL PASS
+         dark  #c86910,#4383ea,#2d9c68 on #18181b -- ALL PASS
+       ---------------------------------------------------------------- */
+    --viz-cat-1: 28 69% 45%;
+    --viz-cat-2: 217 70% 38%;
+    --viz-cat-3: 152 69% 30%;
+
+    /* Sequential ramp -- one hue, light to dark, for ordered magnitude
+       (AR aging buckets). Never a rainbow; deeper always means more. */
+    --viz-seq-1: 29 72% 65.5%;
+    --viz-seq-2: 28 73% 55%;
+    --viz-seq-3: 27.5 74% 45%;
+    --viz-seq-4: 26.75 75% 35.5%;
+    --viz-seq-5: 26 76% 26%;
+
+    /* Border Radius */
+    --radius: 0.5rem;
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+
+    /* Spacing System (8px grid) */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    /* Legacy aliases */
+    --space-xs: 0.5rem;
+    --space-sm: 1rem;
+    --space-md: 1.5rem;
+    --space-lg: 2rem;
+    --space-xl: 3rem;
+    --space-2xl: 4rem;
+    --space-3xl: 6rem;
+
+    /* Typography */
+    --font-sans:
+      var(--font-inter), "Inter", "Inter Variable", ui-sans-serif, system-ui,
+      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+      Arial, sans-serif;
+    --font-title: var(--font-oswald), "Oswald", "Arial Narrow", sans-serif;
+    --font-mono:
+      "JetBrains Mono", "SF Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+      Consolas, "Liberation Mono", "Courier New", monospace;
+    /* Headings use the primary sans stack. Oswald is reserved for titles via
+       --font-title so operational headings remain readable at every density. */
+    --font-heading: var(--font-sans);
+    --font-heading-weight: 600;
+
+    /* Transition Tokens */
+    --transition-instant: 0ms;
+    --transition-fast: 100ms;
+    --transition-normal: 150ms;
+    --transition-spring: 200ms;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    /* Brand — used for Procore integration badges only */
+    --brand: var(--brand-orange-500);
+    --brand-hover: var(--brand-orange-600);
+    --brand-light: var(--brand-orange-50);
+
+    /* Surface Colors */
+    --surface-inverse: var(--neutral-900);
+    --surface-elevated: 0 0% 100%;
+
+    /* Semantic Status Colors */
+    --status-success: 160 94% 24%;
+    --status-success-bg: 152 81% 96%;
+    --status-success-border: 156 72% 67%;
+    --status-warning: 32 95% 37%;
+    --status-warning-bg: 48 100% 96%;
+    --status-warning-border: 45 96% 65%;
+    --status-error: 0 73% 42%;
+    --status-error-bg: 0 86% 97%;
+    --status-error-border: 0 94% 82%;
+    --status-info: 217 91% 60%;
+    --status-fixed: 174 80% 35%;
+    /* Money: a cost, request, payment or exposure. Its own hue so a financial
+       mark never reads as an error or a warning (owner, 2026-09-23). */
+    --status-financial: 271 56% 46%;
+
+    /* Diverging financial series. A negative margin is a bad number, not a
+       broken system, so it reads `warning` — `destructive` is reserved for a
+       failure (a write that did not land, a ledger that disagrees). Positive is
+       the default and takes no colour at all: once every bar is green, the one
+       red bar is the only thing anyone sees, and "which are positive" was never
+       the question. */
+    --chart-figure: hsl(var(--muted-foreground));
+    --chart-negative: hsl(var(--status-warning));
+    --chart-collected: hsl(var(--status-success));
+
+    /* Cover band — the identity strip at the head of a record or a financial
+       surface. A distinct deep-slate ground so the facts that never move sit on
+       something the page cannot be confused with. Its own foreground/muted pair
+       because the page's ink tokens do not clear 4.5:1 against it. */
+    --band: 213 50% 21%;
+    --band-elevated: 209 45% 26%;
+    --band-foreground: 210 44% 96%;
+    --band-muted: 211 32% 70%;
+    --band-border: 209 37% 32%;
+    /* The page's status tones are mixed against the page ground and collapse on
+       the band: `success` lands at 2.3:1 there and `destructive` at 2.0:1. The
+       band gets one of its own, for the negative case only — a positive figure
+       is the expected case, and colouring it is how a surface ends up green
+       everywhere with nothing legible left to stand out. */
+    --band-negative: 8 75% 76%;
+
+    /* Sidebar */
+    --sidebar: hsl(0 0% 100%);
+    --sidebar-foreground: hsl(240 6% 10%);
+    --sidebar-primary: hsl(var(--brand-orange-500));
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    /* Hover/active is the same very light gray as --accent, never an orange
+       tint. Owner decision 2026-09-11: "never use orange on hover". */
+    --sidebar-accent: hsl(var(--neutral-100));
+    --sidebar-accent-foreground: hsl(var(--neutral-900));
+    --sidebar-border: hsl(240 5% 91%);
+    --sidebar-ring: hsl(var(--brand-orange-500));
+
+    /* Premium Shadows */
+    --shadow-subtle: 0 1px 2px 0 rgb(0 0 0 / 0.03);
+    --shadow-sm:
+      0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    --shadow-md:
+      0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --shadow-lg:
+      0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    --shadow-xl:
+      0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+    --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.03);
+    /* Edge elevation for fixed app chrome (sidebar). Replaces the 1px border so
+       the nav reads as a layer above the canvas instead of a ruled-off column.
+       Kept near the threshold of visible on purpose: at 0.16/0.10 alpha this read
+       as a dark smear down the page rather than a lift (reported 2026-08-24). */
+    --shadow-edge:
+      4px 0 16px -12px rgb(0 0 0 / 0.06), 1px 0 3px -2px rgb(0 0 0 / 0.04);
+    --shadow-edge-inverse:
+      -4px 0 16px -12px rgb(0 0 0 / 0.06), -1px 0 3px -2px rgb(0 0 0 / 0.04);
+    /* The hover-expanded (peeking) nav only. Same argument as --shadow-drawer
+       below -- a panel floating over the page needs a cast edge to say it is in
+       front -- but lighter: this one is transient, covers a quarter of the
+       screen, and pairs with a 1px rule. The resting --shadow-edge above cannot
+       do this job; it is deliberately near-invisible because at rest the rail
+       has its own column and nothing behind it (a heavier resting edge read as
+       a dark smear down the page, 2026-08-24). */
+    --shadow-edge-overlay:
+      10px 0 24px -14px rgb(0 0 0 / 0.12), 1px 0 3px -1px rgb(0 0 0 / 0.07);
+    --shadow-edge-overlay-inverse:
+      -10px 0 24px -14px rgb(0 0 0 / 0.12), -1px 0 3px -1px rgb(0 0 0 / 0.07);
+    /* The mobile nav drawer slides over a page it has pushed aside, and this is
+       the one place a real shadow is the point: with no scrim, the cast edge is
+       what says "this panel is in front of the page", and the strip of page it
+       falls on is the tap target that closes it. */
+    --shadow-drawer:
+      12px 0 40px -8px rgb(0 0 0 / 0.16), 2px 0 6px -2px rgb(0 0 0 / 0.08);
+
+    /* Premium Animation Timing */
+    --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 400ms;
+
+    /* ================================================================
+       COMPONENT-LEVEL TOKENS
+       These reference semantic tokens above, so they auto-adapt to
+       dark mode without needing .dark overrides.
+       Use these when you need to retheme a single component type.
+       ================================================================ */
+
+    /* Button */
+    --btn-primary-bg: var(--primary);
+    --btn-primary-fg: var(--primary-foreground);
+    --btn-destructive-bg: var(--destructive);
+    --btn-destructive-fg: var(--destructive-foreground);
+
+    /* Input / Form */
+    --input-bg: var(--card);
+    --input-border: var(--border);
+    --input-border-focus: var(--primary);
+    --input-ring: var(--ring);
+    --input-radius: var(--radius-sm);
+    --input-placeholder: var(--neutral-500);
+    /* Every shared Button corner. Owner-set 2026-09-11 ("5px, global"). */
+    --button-radius: 5px;
+
+    /* Card / Surface */
+    --card-bg: var(--card);
+    --card-border: var(--border);
+    --card-radius: var(--radius);
+    --card-shadow: var(--shadow-sm);
+
+    /* Table */
+    --table-header-bg: var(--muted);
+    --table-row-hover: hsl(var(--muted) / 0.6);
+    --table-border: var(--border);
+
+    /* Badge / Status (reference --status-* tokens) */
+    --badge-success-bg: var(--status-success);
+    --badge-warning-bg: var(--status-warning);
+    --badge-error-bg: var(--status-error);
+    --badge-info-bg: var(--status-info);
+
+    /* Sidebar */
+    --nav-item-hover: hsl(var(--accent));
+    --nav-item-active: hsl(var(--primary) / 0.12);
+    --nav-item-active-fg: hsl(var(--primary));
+  }
+
+  .dark {
+    /* ================================================================
+       CARBON THEME (Dark) — Superhuman five-shades-of-gray
+       ================================================================ */
+
+    /* The accounting dashboard is the dark-workspace reference: its charcoal
+       ground reduces the hard near-black contrast of the old app canvas, and
+       its warm near-white foreground stays legible without reading blue.
+       This is the exact HSL of accounting-exec's dark --plane (#2d3037,
+       exec-theme.module.css), not an approximation of it (owner correction
+       2026-09-11: the prior 228 10% 17% was close but not the same color). */
+    --background: 222 10% 20%;
+    --foreground: 60 9% 96%;
+    --card: 240 5% 13%;
+    --card-foreground: 0 0% 92%;
+    --popover: 240 5% 18%;
+    --popover-foreground: 0 0% 92%;
+    --surface-soft: 240 5% 18%;
+    --background-secondary: 240 5% 13%;
+    --surface-summary: 240 5% 16%;
+    --right-sidebar-bg: 240 6% 9%;
+    --primary: 29 90% 61%;
+    --primary-foreground: 0 0% 100%;
+    --button-primary: 60 9% 96%;
+    --button-primary-foreground: 240 6% 10%;
+    --action: 215 40% 52%;
+    --action-foreground: 0 0% 100%;
+    --secondary: 240 5% 16%;
+    --secondary-foreground: 0 0% 92%;
+    --muted: 240 5% 16%;
+    --muted-subtle: 240 5% 12%;
+    --muted-foreground: 0 0% 58%;
+    --input-placeholder: 0 0% 48%;
+    --heading-label: 0 0% 72%;
+    --accent: 240 5% 16%;
+    --accent-foreground: 0 0% 95%;
+    --light: 28 69% 18%;
+    --destructive: var(--status-error);
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5% 19%;
+    --input: 240 4% 28%;
+    --ring: 240 5% 35%;
+
+    --chart-1: 29 90% 61%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 38 80% 55%;
+    --chart-4: 29 92% 53%;
+    --chart-5: 152 60% 50%;
+
+    /* Dark-mode viz palette: SELECTED against the dark surface, not a flip of
+       the light steps. The dark lightness band (OKLCH L 0.48-0.67) is much
+       tighter than light's (0.43-0.77), so simply brightening the light hues
+       fails it -- each hue is snapped to its own passing step. */
+    --viz-cat-1: 29 85% 42.5%;
+    --viz-cat-2: 217 80% 59%;
+    --viz-cat-3: 152 55% 39.5%;
+
+    --viz-seq-1: 27 70% 26%;
+    --viz-seq-2: 27.5 71% 37.5%;
+    --viz-seq-3: 28 72% 49%;
+    --viz-seq-4: 28.5 73% 60.5%;
+    --viz-seq-5: 29 74% 72%;
+
+    --brand: 29 90% 61%;
+    --brand-hover: 29 92% 68%;
+    --brand-light: 28 69% 16%;
+
+    --surface-inverse: 0 0% 92%;
+    --surface-elevated: 240 5% 18%;
+
+    --status-success: 152 69% 45%;
+    --status-success-bg: 152 30% 15%;
+    --status-success-border: 152 35% 32%;
+    --status-warning: 38 92% 55%;
+    --status-warning-bg: 38 32% 15%;
+    --status-warning-border: 38 45% 34%;
+    --status-error: 0 72% 55%;
+    --status-error-bg: 0 32% 15%;
+    --status-error-border: 0 45% 34%;
+    --status-info: 217 91% 65%;
+    --status-fixed: 174 80% 42%;
+    --status-financial: 271 70% 72%;
+
+    --chart-figure: hsl(var(--muted-foreground));
+    --chart-negative: hsl(var(--status-warning));
+    --chart-collected: hsl(var(--status-success));
+
+    /* Dark is SELECTED, not inverted: the band goes deeper rather than flipping
+       to a light strip, so it stays the darkest ground on the page in both
+       themes and the reader's mental model of "the band" survives the switch. */
+    --band: 213 51% 17%;
+    --band-elevated: 210 50% 23%;
+    --band-foreground: 210 47% 94%;
+    --band-muted: 211 31% 66%;
+    --band-border: 211 40% 29%;
+    --band-negative: 8 75% 76%;
+
+    --sidebar: hsl(240 6% 9%);
+    --sidebar-foreground: hsl(0 0% 85%);
+    --sidebar-primary: hsl(29 90% 61%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(240 5% 16%);
+    --sidebar-accent-foreground: hsl(0 0% 92%);
+    --sidebar-border: hsl(240 5% 19%);
+    --sidebar-ring: hsl(29 90% 61%);
+
+    /* A dark canvas swallows a light shadow, so the dark edge stays a little
+       deeper than the light one -- but nowhere near the old 0.75 alpha, which
+       rendered as a black band beside the rail. */
+    --shadow-edge:
+      6px 0 20px -14px rgb(0 0 0 / 0.4), 1px 0 4px -3px rgb(0 0 0 / 0.3);
+    --shadow-edge-inverse:
+      -6px 0 20px -14px rgb(0 0 0 / 0.4), -1px 0 4px -3px rgb(0 0 0 / 0.3);
+    --shadow-edge-overlay:
+      14px 0 28px -16px rgb(0 0 0 / 0.65), 1px 0 4px -2px rgb(0 0 0 / 0.5);
+    --shadow-edge-overlay-inverse:
+      -14px 0 28px -16px rgb(0 0 0 / 0.65), -1px 0 4px -2px rgb(0 0 0 / 0.5);
+    --shadow-drawer:
+      12px 0 40px -8px rgb(0 0 0 / 0.55), 2px 0 6px -2px rgb(0 0 0 / 0.35);
+  }
+}
