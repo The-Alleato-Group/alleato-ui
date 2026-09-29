@@ -13,13 +13,13 @@ version bump.
 
 ## Install
 
-Until the npm release exists, install from a GitHub tag:
+Install from a GitHub tag (the package is not published to npm):
 
 ```bash
-pnpm add github:The-Alleato-Group/alleato-ui#v0.1.0
+pnpm add github:The-Alleato-Group/alleato-ui#v0.1.2
 ```
 
-After it is on npm: `pnpm add @alleato/ui`.
+To update an app, change the tag in its `package.json` and reinstall.
 
 ## Set up a Next.js + Tailwind 4 app
 
@@ -92,8 +92,9 @@ pnpm check        # typecheck + tests
 ```
 
 Release: bump `version` in `package.json`, commit, then
-`git tag vX.Y.Z && git push --tags`. The `release` workflow publishes to npm
-with provenance once npm trusted publishing is configured for this repo.
+`git tag -a vX.Y.Z -m "..." && git push origin vX.Y.Z`. The `release`
+workflow re-runs the checks and creates the GitHub release notes. Then bump the
+tag in each app.
 
 ## License
 

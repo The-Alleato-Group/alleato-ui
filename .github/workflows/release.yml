@@ -1,16 +1,15 @@
 name: Release
-# Publishes to npm when a vX.Y.Z tag is pushed. Uses npm trusted publishing
-# (OIDC): no token is stored. Configure once on npmjs.com under the package's
-# settings -> Trusted publisher: GitHub Actions, repo The-Alleato-Group/alleato-ui,
-# workflow release.yml.
+# Apps install this package from a GitHub tag
+# ("@alleato/ui": "github:The-Alleato-Group/alleato-ui#vX.Y.Z"); it is not
+# published to npm (decision 2026-09-29). On a tag, this checks the release
+# and creates the GitHub release notes.
 on:
   push:
     tags: ["v*"]
 permissions:
-  contents: read
-  id-token: write
+  contents: write
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -18,11 +17,12 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
-          registry-url: https://registry.npmjs.org
+          node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - name: Tag matches package.json version
         run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
-      - run: npm publish --access public --provenance
+      - run: gh release create "$GITHUB_REF_NAME" --generate-notes --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}

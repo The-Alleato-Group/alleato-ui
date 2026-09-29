@@ -15,9 +15,9 @@ primitives — and every Alleato web app installs it instead of keeping its own
 copy. Source of truth for the look is the main app (`projects.alleatogroup.com`,
 repo `The-Alleato-Group/project-management`, `frontend/`).
 
-Decisions (Megan, 2026-09-29): own repo `The-Alleato-Group/alleato-ui`, public;
-published publicly on npm as `@alleato/ui`. Until the npm org exists, apps
-install from a GitHub tag: `github:The-Alleato-Group/alleato-ui#vX.Y.Z`.
+Decisions (Megan, 2026-09-29): own repo `The-Alleato-Group/alleato-ui`, public.
+Apps install from a GitHub tag: `github:The-Alleato-Group/alleato-ui#vX.Y.Z`.
+Not published to npm (Megan, 2026-09-29: not needed for three internal apps).
 
 Consumers:
 
@@ -34,7 +34,7 @@ Consumers:
 - [x] AUI-001: Extract tokens (light + dark `:root` variables, Tailwind 4 `@theme` color/radius/font/shadow mapping, keyframes) from `frontend/src/app/globals.css` + `frontend/tailwind.config.ts` into `styles/tokens.css` and `styles/theme.css`. **Files:** `styles/*`. **Done when:** a Tailwind 4 build of `theme.css` emits `bg-primary`, `text-muted-foreground`, `rounded-lg`, `font-title` with the same values as the main app. Effort: M Evidence: `test/theme.test.ts` compares 16 utilities with production CSS; resynced from origin/main by `scripts/sync-from-app.mjs` (v0.1.1).
 - [x] AUI-002: Move the self-contained shadcn primitives (no app imports) into `src/components/`, internal imports made relative. **Files:** `src/components/*`, `src/lib/utils.ts`, `src/hooks/use-mobile.ts`. **Done when:** `tsc --noEmit` passes. Effort: M Evidence: `tsc --noEmit` clean; 48 files incl. helpers.
 - [x] AUI-003: Render smoke test for every export + CSS compile test. **Files:** `test/*`. **Done when:** `pnpm test` green in CI. Effort: S Evidence: `pnpm test` 53/53.
-- [x] AUI-004: CI (typecheck + test) and release workflow (npm trusted publishing on tag). **Files:** `.github/workflows/*`. **Done when:** CI green on main. Effort: S Evidence: CI green on every push to main. Release workflow waits on the npm org (see blockers).
+- [x] AUI-004: CI (typecheck + test) and release workflow (GitHub release notes on tag; npm dropped 2026-09-29). **Files:** `.github/workflows/*`. **Done when:** CI green on main. Effort: S Evidence: CI green on every push to main. Release workflow re-checks the tag and creates GitHub release notes.
 - [x] AUI-005: Tag `v0.1.0`. **Done when:** `github:The-Alleato-Group/alleato-ui#v0.1.0` installs in a clean project. Effort: S Evidence: training installs `#v0.1.0` (pnpm lock resolves codeload tarball, HTTP 200).
 
 Gate: v0.1.0 tag installs and its CSS compiles in a consumer.
@@ -66,11 +66,13 @@ Gate: main app deployed, screenshots match. PASSED 2026-09-29.
 
 ## Decisions & blockers
 
-- 2026-09-29 — Blocked on Megan for npm only: create the free npm org `alleato` and add a trusted publisher (repo `The-Alleato-Group/alleato-ui`, workflow `release.yml`). Everything else proceeds on GitHub tags.
+- 2026-09-29 — ~~Blocked on Megan for npm~~ Dropped (Megan): GitHub tags are enough. Was: create the free npm org `alleato` and add a trusted publisher (repo `The-Alleato-Group/alleato-ui`, workflow `release.yml`). Everything else proceeds on GitHub tags.
 - 2026-09-29 — Components ship as TypeScript source, not a compiled bundle. Every consumer is Next.js, which compiles it via `transpilePackages`, and Tailwind must scan the source anyway. No build step means no `"use client"` loss and no dist/source drift.
 - 2026-09-29 — A package, not a shadcn copy-paste registry: copying files into each app is how `training/` drifted.
 
 ## Log
+
+- 2026-09-29 — npm dropped: package marked private, release workflow creates GitHub release notes instead of publishing, issue #1 closed.
 
 - 2026-09-29 — v0.1.2: `--font-sans`/`--font-title` now fall back when an app does not define `--font-inter`/`--font-oswald` (ASRS rendered Times without them); a test fails on any unguarded app-provided variable. `tailwindcss` is an optional peer (tokens-only consumers such as ASRS no longer get it installed). `scripts/sync-from-app.mjs` deleted: the package is now the source.
 
