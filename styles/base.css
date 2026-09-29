@@ -142,8 +142,11 @@
    Page titles: Oswald, Book (400), uppercase. Unlayered on purpose so it
    outranks utility weight classes. Every other heading uses Inter and keeps
    its component-defined weight and case.
+
+   Opt out with data-plain-heading on the h1 (a long-form article title set in
+   Inter): utility classes cannot win against this unlayered rule.
    ------------------------------------------------------------------------- */
-h1,
+h1:not([data-plain-heading]),
 .text-page-title,
 .text-display,
 .font-title {
@@ -152,7 +155,7 @@ h1,
   text-transform: uppercase;
 }
 
-h1 {
+h1:not([data-plain-heading]) {
   letter-spacing: 0;
 }
 
