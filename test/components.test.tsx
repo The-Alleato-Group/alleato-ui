@@ -15,19 +15,23 @@ import {
   TableRow,
 } from "../src/components/table";
 
-const componentsDir = path.resolve(__dirname, "../src/components");
-const modules = readdirSync(componentsDir).filter((file) => /\.tsx?$/.test(file));
+const srcDir = path.resolve(__dirname, "../src");
+const modules = ["components", "ds", "layout", "lib", "hooks"].flatMap((dir) =>
+  readdirSync(path.join(srcDir, dir))
+    .filter((file) => /\.tsx?$/.test(file))
+    .map((file) => `${dir}/${file}`),
+);
 
-describe("every component module", () => {
+describe("every package module", () => {
   it.each(modules)("%s loads and exports something", async (file) => {
-    const mod = await import(`../src/components/${file}`);
+    const mod = await import(`../src/${file}`);
     expect(Object.keys(mod).length).toBeGreaterThan(0);
   });
 
   it("imports nothing from an app (no @/ aliases)", async () => {
     const { readFileSync } = await import("node:fs");
     const offenders = modules.filter((file) =>
-      /from ["']@\//.test(readFileSync(path.join(componentsDir, file), "utf8")),
+      /from ["']@\//.test(readFileSync(path.join(srcDir, file), "utf8")),
     );
     expect(offenders).toEqual([]);
   });

@@ -16,7 +16,7 @@ version bump.
 Install from a GitHub tag (the package is not published to npm):
 
 ```bash
-pnpm add github:The-Alleato-Group/alleato-ui#v0.1.2
+pnpm add github:The-Alleato-Group/alleato-ui#v0.2.0
 ```
 
 To update an app, change the tag in its `package.json` and reinstall.
@@ -73,8 +73,19 @@ Dark mode is the `.dark` class on an ancestor (next-themes `attribute="class"`).
   sheet, sidebar, skeleton, slider, sonner, spinner, switch, table, tabs,
   textarea, toggle, toggle-group, tooltip.
 
+- `src/ds/*` — design-system components: status-badge, empty-state,
+  error-state, heading, text, eyebrow, stat, kpi, chart-card, section-header,
+  section-card, InfoAlert, ConfirmDeleteDialog, EditModeActions, SplitButton,
+  filter-menu, tag-input, CreatableOptionInput, selection-checkbox,
+  expanding-search, density-control, inline-add-button, icon-badge, tone-dot,
+  timeline, inspector, kanban, review-before-commit, comment-avatar,
+  comment-row, data-table. Import as `@alleato/ui/ds/<name>`.
+- `src/layout/headings.tsx` — PageTitle, PageEyebrow, SectionHeading,
+  SubsectionHeading, LabelHeading. Import as `@alleato/ui/layout/headings`.
+
 Optional peers, needed only for the component that uses them: `recharts`
-(chart), `react-hook-form` (form), `sonner` + `next-themes` (sonner).
+(chart), `react-hook-form` (form), `sonner` + `next-themes` (sonner),
+`next` (kpi, section-card links), `framer-motion` (animated empty state).
 
 ## Rules
 
