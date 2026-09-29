@@ -54,7 +54,7 @@ Gate: main app deployed, screenshots match. PASSED 2026-09-29.
 
 ## P3 — ASRS onto the package
 
-- [ ] AUI-030: Add Tailwind 4 + the package to `apps/web`; replace the interim token contract in `docs/design-system.md` with the package. **Done when:** ASRS estimates page screenshot uses the package Button/Input/Card/Badge/Table. Effort: M
+- [x] AUI-030 (tokens; components are ASRS P30): Add Tailwind 4 + the package to `apps/web`; replace the interim token contract in `docs/design-system.md` with the package. **Done when:** ASRS estimates page screenshot uses the package Button/Input/Card/Badge/Table. Effort: M Evidence: ASRS P29 merged `2d80e22c` (main `476fa126`) on @alleato/ui#v0.1.1 after an independent verifier PASS; 34 clashing names resolved (32 identical, `--muted` and `--action` remapped with no visible change); only visible change is Inter now rendering.
 
 ## P4 — Docs site tokens
 
@@ -71,6 +71,8 @@ Gate: main app deployed, screenshots match. PASSED 2026-09-29.
 - 2026-09-29 — A package, not a shadcn copy-paste registry: copying files into each app is how `training/` drifted.
 
 ## Log
+
+- 2026-09-29 — v0.1.2: `--font-sans`/`--font-title` now fall back when an app does not define `--font-inter`/`--font-oswald` (ASRS rendered Times without them); a test fails on any unguarded app-provided variable. `tailwindcss` is an optional peer (tokens-only consumers such as ASRS no longer get it installed). `scripts/sync-from-app.mjs` deleted: the package is now the source.
 
 - 2026-09-29 — Main app switched (`af891fb7d1`): 48 re-exports, token block moved, shared use-mobile hook, jest transforms the package, 16 source-reading contract tests pointed at the real source via `src/test-utils/shared-ui-source.ts`. Full frontend jest 16,649 pass; the 2 failing suites fail identically on untouched main. Local vs production screenshots identical on /67/home, /67/commitments, /67/budget.
 

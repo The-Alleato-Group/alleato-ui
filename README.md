@@ -44,8 +44,8 @@ After it is on npm: `pnpm add @alleato/ui`.
    const oswald = Oswald({ subsets: ["latin"], weight: ["400"], variable: "--font-oswald" });
    ```
 
-   Without them the stacks fall back to locally installed Inter/Oswald, then
-   system fonts.
+   Without them the stacks fall back to an installed Inter/Oswald, then
+   system fonts. Apps that do not use `next/font` can skip this step.
 
 4. Import components by path:
 
@@ -83,18 +83,6 @@ Optional peers, needed only for the component that uses them: `recharts`
 - An app does not keep its own copy of a component in this package. If it
   needs a variant, add the variant here.
 - Every token change is checked against production by `test/theme.test.ts`.
-
-## Keeping the package in step with the main app
-
-Until the main app imports this package (plan AUI-020), the main app is still
-where components are edited. Copy its current versions here with:
-
-```bash
-node scripts/sync-from-app.mjs <project-management checkout at origin/main>
-```
-
-It fails loudly if a component, the token block, or one of the package's own
-edits can no longer be found.
 
 ## Develop and release
 

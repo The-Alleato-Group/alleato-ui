@@ -63,6 +63,24 @@ describe("theme.css", () => {
     expect(missing).toEqual([]);
   });
 
+  it("gives a fallback to every variable an app may leave undefined", () => {
+    // A var() with no fallback that resolves to nothing makes the whole
+    // declaration invalid: with --font-inter unset, --font-sans rendered every
+    // ASRS page in Times (2026-09-29).
+    const styles = ["tokens.css", "base.css", "theme.css"]
+      .map((file) => readFileSync(path.join(root, "styles", file), "utf8"))
+      .join("\n");
+    const defined = new Set(
+      [...styles.matchAll(/(?:^|[\s{;])--([a-z0-9-]+)\s*:/g)].map((m) => m[1]),
+    );
+    // Set inline by the component that reads them, not by the app.
+    const componentSet = new Set(["duration", "angle", "radius", "gap", "radix-collapsible-content-height"]);
+    const unguarded = [...styles.matchAll(/var\(--([a-z0-9-]+)\s*\)/g)]
+      .map((m) => m[1])
+      .filter((name) => !defined.has(name) && !componentSet.has(name) && !name.startsWith("tw-"));
+    expect([...new Set(unguarded)]).toEqual([]);
+  });
+
   it("scans the package's own components", async () => {
     const theme = readFileSync(path.join(root, "styles/theme.css"), "utf8");
     expect(theme).toContain('@source "../src"');
