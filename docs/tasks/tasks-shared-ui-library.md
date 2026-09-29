@@ -41,14 +41,14 @@ Gate: v0.1.0 tag installs and its CSS compiles in a consumer.
 
 ## P1 — Learning app (`training/`) onto the package
 
-- [ ] AUI-010: Install the package; `training/src/components/ui/*` for shared primitives become one-line re-exports; theme comes from the package. **Done when:** `/training`, `/content`, `/knowledge` render with the main app's look (screenshots). Effort: M
+- [x] AUI-010: Install the package; `training/src/components/ui/*` for shared primitives become one-line re-exports; theme comes from the package. **Done when:** `/training`, `/content`, `/knowledge` render with the main app's look (screenshots). Effort: M Evidence: project-management `d21c20e3cb` + `2421157f77` (v0.1.1); production /knowledge computes `--surface-alt: 240 5% 96%` (package value); jest 352/352; local and production screenshots of /knowledge, an article and /training match.
 
 Gate: training deployed and screenshotted on production.
 
 ## P2 — Main app onto the package
 
-- [ ] AUI-020: `frontend/src/components/ui/*` shared primitives become re-exports of `@alleato/ui` (import paths unchanged); tokens from the package; duplicate token blocks deleted. **Done when:** before/after screenshots of 6 representative pages are identical. Effort: L
-- [ ] AUI-021: Guardrail — a check fails when a shared primitive in `components/ui` is anything but a re-export. **Done when:** the check runs in CI and fails on a forked copy. Effort: S
+- [ ] AUI-020 (pushed `af891fb7d1`, waiting on the production release): `frontend/src/components/ui/*` shared primitives become re-exports of `@alleato/ui` (import paths unchanged); tokens from the package; duplicate token blocks deleted. **Done when:** before/after screenshots of 6 representative pages are identical. Effort: L
+- [x] AUI-021: Guardrail — a check fails when a shared primitive in `components/ui` is anything but a re-export. **Done when:** the check runs in CI and fails on a forked copy. Effort: S Evidence: `shared-ui-package.test.ts` in frontend and training (re-export shape + no page-wide token redefinition); both mutations (re-forked badge.tsx, `:root { --primary }` in globals.css) turn it red. Runs in quality-gate full-suite and training-tests.
 
 Gate: main app deployed, screenshots match.
 
@@ -71,6 +71,8 @@ Gate: main app deployed, screenshots match.
 - 2026-09-29 — A package, not a shadcn copy-paste registry: copying files into each app is how `training/` drifted.
 
 ## Log
+
+- 2026-09-29 — Main app switched (`af891fb7d1`): 48 re-exports, token block moved, shared use-mobile hook, jest transforms the package, 16 source-reading contract tests pointed at the real source via `src/test-utils/shared-ui-source.ts`. Full frontend jest 16,649 pass; the 2 failing suites fail identically on untouched main. Local vs production screenshots identical on /67/home, /67/commitments, /67/budget.
 
 - 2026-09-29 — v0.1.0 tagged; Learning app switched (project-management `d21c20e3cb`), release pending the 30-minute controller. v0.1.0 was built from a stale checkout (table headers still uppercase, old button hover, old `--surface-alt`); v0.1.1 resynced from origin/main with `scripts/sync-from-app.mjs`. Mintlify step dropped (site retired 2026-09-25). ASRS token adoption handed to its own phase-gated session.
 
