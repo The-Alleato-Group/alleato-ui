@@ -62,7 +62,9 @@ Gate: main app deployed, screenshots match. PASSED 2026-09-29.
 
 ## P5 — Design-system layer (`components/ds`)
 
-- [ ] AUI-050: Inventory `frontend/src/components/ds`; move the app-independent pieces (status badge, KPI, section headings, empty states) into the package. Effort: L
+- [x] AUI-050: First batch of `components/ds` in the package (v0.2.0): 32 app-independent components, `layout/headings`, `lib/title-case`. Evidence: project-management `06310e2b0a` (re-exports in both apps, guardrail extended and mutation-checked); package test `design-rules.test.ts` enforces the no-uppercase / no-wide-tracking rule on package source.
+- [ ] AUI-051: Second `ds` batch: components tied to app helpers (DetailField/InlineEditField/EditableDetailField, date-range-picker, document-picker, local-date-time, trend-metric-*, comment-composer/thread, mention-textarea, rich-text). Each needs its app dependency (formatters, date utils, mentions, API client) passed in or moved first. Effort: L
+- [ ] AUI-052: ASRS P30 on package components (owned by the ASRS Orchestrator; Stage A foundation in progress, Stage B screens after LC-076). Effort: L
 
 ## Decisions & blockers
 
@@ -71,6 +73,8 @@ Gate: main app deployed, screenshots match. PASSED 2026-09-29.
 - 2026-09-29 — A package, not a shadcn copy-paste registry: copying files into each app is how `training/` drifted.
 
 ## Log
+
+- 2026-09-29 — ASRS P30 handed to the ASRS Orchestrator (Megan: ASRS takes the package element defaults, Oswald uppercase titles). v0.2.0 adds the first `ds` batch; main app + Learning app switched in `06310e2b0a`. Disk hit 100% mid-run (1.8 GB free); `pnpm store prune` + npm cache clean recovered ~6 GB.
 
 - 2026-09-29 — npm dropped: package marked private, release workflow creates GitHub release notes instead of publishing, issue #1 closed.
 
