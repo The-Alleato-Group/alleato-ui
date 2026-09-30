@@ -16,7 +16,7 @@ version bump.
 Install from a GitHub tag (the package is not published to npm):
 
 ```bash
-pnpm add github:The-Alleato-Group/alleato-ui#v0.2.1
+pnpm add github:The-Alleato-Group/alleato-ui#v0.3.0
 ```
 
 To update an app, change the tag in its `package.json` and reinstall.
@@ -82,6 +82,10 @@ Dark mode is the `.dark` class on an ancestor (next-themes `attribute="class"`).
   comment-row, data-table. Import as `@alleato/ui/ds/<name>`.
 - `src/layout/headings.tsx` — PageTitle, PageEyebrow, SectionHeading,
   SubsectionHeading, LabelHeading. Import as `@alleato/ui/layout/headings`.
+- `src/ds/*` also includes shared detail fields, trend metrics, date-range
+  selection, viewer-local timestamps, comment display/composition, mention
+  suggestions, and safe rich-text display. Apps supply the current comment
+  author and own persistence; the package owns presentation and parsing.
 
 Optional peers, needed only for the component that uses them: `recharts`
 (chart), `react-hook-form` (form), `sonner` + `next-themes` (sonner),
