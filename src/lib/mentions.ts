@@ -46,7 +46,9 @@ function mentionPattern(names: readonly string[]): RegExp {
   // never also to `Megan Harrison`. A per-user prefix test did exactly that on
   // 2026-09-16 and notified two accounts for one mention.
   const ordered = [...names].sort((a, b) => b.length - a.length);
-  return new RegExp(`@(${ordered.map(escapeRegExp).join("|")})(?![\\w.@-])`, "gi");
+  // A final period is sentence punctuation, but a period followed by a word
+  // character continues an unknown mention (e.g. @Alex Lee.Jones).
+  return new RegExp(`@(${ordered.map(escapeRegExp).join("|")})(?![\\w@-]|\\.[\\w])`, "gi");
 }
 
 /** Ids of every user whose display name appears as `@Name` in the text. */

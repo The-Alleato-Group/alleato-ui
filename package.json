@@ -1,6 +1,6 @@
 {
   "name": "@alleato/ui",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Alleato design tokens and shadcn components, shared by every Alleato web app.",
   "license": "UNLICENSED",

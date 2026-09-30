@@ -55,6 +55,7 @@ describe("shared design-system contracts", () => {
     expect(extractMentionIds("Ask @Alex Lee.Jones", users)).toEqual([]);
     expect(extractMentionIds("Ask @Alex Lee@other", users)).toEqual([]);
     expect(extractMentionIds("Ask @Alex Lee", users)).toEqual(["a"]);
+    expect(extractMentionIds("Ask @Alex Lee.", users)).toEqual(["a"]);
   });
 
   it("uses Shift+Enter for a newline while suggestions are open", () => {
