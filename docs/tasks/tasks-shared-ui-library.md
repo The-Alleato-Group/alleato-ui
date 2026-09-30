@@ -63,7 +63,7 @@ Gate: main app deployed, screenshots match. PASSED 2026-09-29.
 ## P5 — Design-system layer (`components/ds`)
 
 - [x] AUI-050: First batch of `components/ds` in the package (v0.2.0): 32 app-independent components, `layout/headings`, `lib/title-case`. Evidence: project-management `06310e2b0a` (re-exports in both apps, guardrail extended and mutation-checked); package test `design-rules.test.ts` enforces the no-uppercase / no-wide-tracking rule on package source.
-- [ ] AUI-051: Second `ds` batch: components tied to app helpers (DetailField/InlineEditField/EditableDetailField, date-range-picker, document-picker, local-date-time, trend-metric-*, comment-composer/thread, mention-textarea, rich-text). Each needs its app dependency (formatters, date utils, mentions, API client) passed in or moved first. Effort: L. The v0.3.0 extraction includes DetailField, date-range-picker, local-date-time, trend-metric-*, comment-composer/thread, mention-textarea, rich-text, and their pure helpers; app adoption and the remaining edit/document adapters are still required.
+- [ ] AUI-051: Second `ds` batch: components tied to app helpers (DetailField/InlineEditField/EditableDetailField, date-range-picker, document-picker, local-date-time, trend-metric-*, comment-composer/thread, mention-textarea, rich-text). Each needs its app dependency (formatters, date utils, mentions, API client) passed in or moved first. Effort: L. v0.3.1 includes the pure design-system components and their app adoption; `document-picker` still owns project-specific attachment APIs and needs a data/presentation boundary before extraction. Production visual proof is pending.
 - [ ] AUI-052: ASRS P30 on package components (owned by the ASRS Orchestrator; Stage A foundation in progress, Stage B screens after LC-076). Effort: L
 
 ## Decisions & blockers
@@ -74,7 +74,7 @@ Gate: main app deployed, screenshots match. PASSED 2026-09-29.
 
 ## Log
 
-- 2026-09-30 — v0.3.0 candidate extracts the app-independent second batch and passes package typecheck plus focused behavior checks. `CommentComposer` takes author identity from its consumer; rich-text parsing remains React-node based without raw HTML execution. Main-app adoption, independent visual review, InlineEditField/EditableDetailField, and the app-specific document-picker boundary remain open.
+- 2026-09-30 — v0.3.1 candidate adds InlineEditField and EditableDetailField to the v0.3.0 second batch. `CommentComposer` takes author identity from its consumer; rich-text parsing remains React-node based without raw HTML execution. The document picker remains an app data adapter until its API and upload boundary is separated from presentation.
 
 - 2026-09-29 — ASRS P30 handed to the ASRS Orchestrator (Megan: ASRS takes the package element defaults, Oswald uppercase titles). v0.2.0 adds the first `ds` batch; main app + Learning app switched in `06310e2b0a`. Disk hit 100% mid-run (1.8 GB free); `pnpm store prune` + npm cache clean recovered ~6 GB.
 
