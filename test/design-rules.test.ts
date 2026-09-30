@@ -23,7 +23,9 @@ const BANNED = [/\buppercase\b/, /\btracking-(wide|wider|widest)\b/, /\btracking
 function codeLines(file: string) {
   return readFileSync(file, "utf8")
     .replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, " "))
-    .split("\n")
+    // \r?\n: on a CRLF checkout the trailing \r stops `//.*$` from matching,
+    // so comments would be scanned as code.
+    .split(/\r?\n/)
     .map((text, index) => ({ text: text.replace(/\/\/.*$/, ""), line: index + 1 }));
 }
 

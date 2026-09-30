@@ -24,6 +24,9 @@ function isZeroLike(raw: string): boolean {
  *
  * For currency/money inputs, use MoneyField instead.
  *
+ * No default placeholder: a quantity, day count, or percent has no universal
+ * example value, so callers pass their own hint when one helps.
+ *
  * Features:
  * - Typing: raw numeric string, no formatting mid-keystroke
  * - Blur: thousand separators via Intl.NumberFormat (e.g. 150,000.00)
@@ -41,7 +44,7 @@ function NumberInput({
   decimals = 2,
   onBlur,
   value,
-  placeholder = "e.g. 1250",
+  placeholder,
   step = "0.01",
   ref,
   ...props

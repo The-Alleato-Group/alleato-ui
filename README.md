@@ -16,7 +16,7 @@ version bump.
 Install from a GitHub tag (the package is not published to npm):
 
 ```bash
-pnpm add github:The-Alleato-Group/alleato-ui#v0.2.0
+pnpm add github:The-Alleato-Group/alleato-ui#v0.2.1
 ```
 
 To update an app, change the tag in its `package.json` and reinstall.
