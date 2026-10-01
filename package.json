@@ -1,6 +1,6 @@
 {
   "name": "@alleato/ui",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "private": true,
   "description": "Alleato design tokens and shadcn components, shared by every Alleato web app.",
   "license": "UNLICENSED",
@@ -33,6 +33,7 @@
     "./layout/headings": "./src/layout/headings.tsx",
     "./lib/title-case": "./src/lib/title-case.ts",
     "./lib/date-utils": "./src/lib/date-utils.ts",
+    "./lib/filter-query": "./src/lib/filter-query.ts",
     "./lib/format": "./src/lib/format.ts",
     "./lib/mentions": "./src/lib/mentions.ts",
     "./lib/rich-text": "./src/lib/rich-text.ts",

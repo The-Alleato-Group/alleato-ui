@@ -86,6 +86,9 @@ Dark mode is the `.dark` class on an ancestor (next-themes `attribute="class"`).
   selection, viewer-local timestamps, comment display/composition, mention
   suggestions, and safe rich-text display. Apps supply the current comment
   author and own persistence; the package owns presentation and parsing.
+- `src/lib/filter-query.ts` owns the pure table filter rule model, URL codec,
+  comparisons, and legacy-filter bridge shared by Alleato OS and ASRS. Import
+  `@alleato/ui/lib/filter-query`; each app owns its table UI and data resolver.
 
 Optional peers, needed only for the component that uses them: `recharts`
 (chart), `react-hook-form` (form), `sonner` + `next-themes` (sonner),
