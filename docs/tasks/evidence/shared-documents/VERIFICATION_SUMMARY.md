@@ -10,3 +10,5 @@ The standalone React consumer imports the actual package exports with shared CSS
 - Existing host APIs, upload constraints and query invalidations remain in the app adapters. Consumer source publication, merge, deployment and authenticated canonical page screenshots remain pending.
 
 Images: `desktop-1440.png`, `mobile-390.png`, `mobile-edit-390.png`.
+
+Release follow-up: v0.5.1 passes typecheck and 159 tests, including a partial-host integration regression: list Edit is omitted when edit-state control is absent. The pictured sample consumer supplies that control. These screenshots were captured during the v0.5.0 extraction; the patch changes the missing-callback guard only. Final focused PM checks (including the print owner contract) pass 130 tests, and Training ownership checks pass 94. Final application migration is PR #2927, head `82f0d6532ff8d7cc07e69eee8828271abb975489`; deployed application proof remains pending.
