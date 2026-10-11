@@ -158,7 +158,7 @@ export function DocumentAttachmentsView({
   };
 
   const renderActions = (doc: AttachmentDocument) => {
-    if (!onDelete && !onDocumentTypeChange && !(doc.download_url && onDownload)) return null;
+    if (!onDelete && !(onDocumentTypeChange && onEditingChange) && !(doc.download_url && onDownload)) return null;
     const isRemoving =
       removingDocumentId === doc.document_metadata_id;
     const name = getDocumentName(doc);
@@ -180,7 +180,7 @@ export function DocumentAttachmentsView({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
-          {onDocumentTypeChange && <DropdownMenuItem
+          {onDocumentTypeChange && onEditingChange && <DropdownMenuItem
             disabled={documentTypes.length === 0}
             onSelect={() => onEditingChange?.(doc.document_metadata_id)}
           >

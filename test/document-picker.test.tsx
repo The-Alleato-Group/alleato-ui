@@ -88,6 +88,12 @@ describe("attachment presentation with host-owned operations", () => {
     expect((screen.getByRole("combobox") as HTMLButtonElement).disabled).toBe(true);
   });
 
+  it("does not expose list editing when the host supplies no edit-state callback", () => {
+    render(<DocumentAttachmentsView documents={[document]} documentTypes={types}
+      onFiles={vi.fn()} onDocumentTypeChange={vi.fn()} />);
+    expect(screen.queryByRole("button", { name: /Attachment actions/ })).toBeNull();
+  });
+
   it("renders legacy linked documents and delegates linking and cancellation", () => {
     render(<LinkedDocumentsView documents={[document]} />);
     const link = screen.getByRole("link", { name: "Download" });
