@@ -139,7 +139,7 @@ export function ExpandingSearch({
             type="button"
             variant="ghost"
             size="icon"
-            onMouseDown={clear}
+            onClick={clear}
             aria-label="Clear search"
             className="absolute right-1 h-6 w-6 text-muted-foreground"
           >
