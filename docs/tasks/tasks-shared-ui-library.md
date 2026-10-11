@@ -89,7 +89,7 @@ not proof of a deployed application.
 
 ## P7 — Remaining application presentation boundaries
 
-- [ ] AUI-070: Separate UnifiedTablePage's portable table/toolbar/state presentation from app preferences, reporting and shell adapters. **Files:** PM `components/tables/unified/`, package table modules. **Done when:** existing table regressions pass with a cross-project consumer and no copied table configuration/JSX. Effort: L.
+- [ ] AUI-070: Separate UnifiedTablePage's portable table/toolbar/state presentation from app preferences, reporting and shell adapters. **Files:** PM `components/tables/unified/`, package table modules. Tracking: [PM #2926](https://github.com/The-Alleato-Group/project-management/issues/2926). **Done when:** existing table regressions pass with a cross-project consumer and no copied table configuration/JSX. Effort: L.
 - [ ] AUI-071: Finish the document picker boundary tracked in PM issue #2141. **Files:** package presentation and PM attachment adapter. **Done when:** APIs, upload/storage and permissions stay app-owned while presentation is shared and verified. Effort: L.
 
 Gate: do not claim all application components are portable while these boundaries
@@ -123,3 +123,5 @@ or ASRS AUI-052 remain open.
 - 2026-09-29 — Plan created; repo created (public).
 
 - 2026-10-10 — P6 package candidate v0.4.0 passes `pnpm check` (typecheck, 149 tests); focused source-linked PM checks pass 126 tests and Training shared ownership checks pass 93. Source-linked checks map React to the consumer peer to avoid a second React instance. Training also replaces its eight remaining v0.3 package-owned DS copies; identity stays in its CommentComposer adapter. Consumer publication and deployed visual proof remain open.
+
+- 2026-10-10 — v0.4.0 source `3e0f31aa6ebbf150febe6be745ec3156c0f99042` is published; release workflow [38097368788](https://github.com/The-Alleato-Group/alleato-ui/actions/runs/38097368788) passed typecheck and 150 tests. A standalone React example has desktop/phone browser proof and checked selection/tab interaction. This proves package portability, not deployed PM/Training adoption; AUI-063/064 stay open pending the consumer merge/release. UnifiedTablePage follow-up is PM #2926; document picker remains #2141.

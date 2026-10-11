@@ -154,6 +154,11 @@ Full `UnifiedTablePage` and document-upload APIs remain app-owned; see the
 [shared library plan](docs/tasks/tasks-shared-ui-library.md) for their extraction
 boundaries. These exports are web React components, not React Native controls.
 
+A runnable standalone example, source and inspected desktop/phone screenshots are
+in [`docs/tasks/evidence/shared-layouts/`](docs/tasks/evidence/shared-layouts/VERIFICATION_SUMMARY.md).
+Its records are samples; the example demonstrates package portability and does
+not claim that a consuming application has deployed the new version.
+
 ## Rules
 
 - A value lives in `styles/tokens.css` and nowhere else. Apps do not redefine
