@@ -16,7 +16,7 @@ version bump.
 Install from a GitHub tag (the package is not published to npm):
 
 ```bash
-pnpm add github:The-Alleato-Group/alleato-ui#v0.4.0
+pnpm add github:The-Alleato-Group/alleato-ui#v0.5.0
 ```
 
 To update an app, change the tag in its `package.json` and reinstall.
@@ -183,3 +183,9 @@ tag in each app.
 
 UNLICENSED — Alleato Group, all rights reserved. Built on
 [shadcn/ui](https://ui.shadcn.com) (MIT); see `NOTICE`.
+
+### Document attachment presentation
+
+`@alleato/ui/ds/document-picker` exports `DocumentAttachmentsView`, `LinkedDocumentsView`, and `DocumentLinkView`. Pass documents, document types, loading/upload/mutation state and callbacks from your app. `DocumentAttachmentsView` accepts `onFiles`, `onDelete`, `onDownload`, `onDocumentTypeChange`, and controlled edit state. The host retains entity policies, validation, permissions, API calls and query invalidation. Supply a heading slot and accepted file types from your app.
+
+[Standalone document example](docs/tasks/evidence/shared-documents/index.html) and [verification evidence](docs/tasks/evidence/shared-documents/VERIFICATION_SUMMARY.md) use sample data with host callbacks. They do not establish deployed application adoption.

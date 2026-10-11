@@ -8,7 +8,9 @@ const store = path.join(root, 'node_modules/.pnpm');
 const viteDir = fs.readdirSync(store).find((entry) => entry.startsWith('vite@'));
 if (!viteDir) throw new Error('Install package development dependencies before building the layout example.');
 const { build } = await import(path.join(store, viteDir, 'node_modules/vite/dist/node/index.js'));
-const dest = path.join(root, 'docs/tasks/evidence/shared-layouts');
+const example = process.argv[2] ?? 'shared-layouts';
+if (!/^[a-z-]+$/.test(example)) throw new Error('Example name must contain only lowercase letters and hyphens.');
+const dest = path.join(root, 'docs/tasks/evidence', example);
 const file = path.join(dest, 'consumer.tsx');
 const result = await build({
   configFile: false, root, logLevel: 'error',
