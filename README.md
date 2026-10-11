@@ -16,7 +16,7 @@ version bump.
 Install from a GitHub tag (the package is not published to npm):
 
 ```bash
-pnpm add github:The-Alleato-Group/alleato-ui#v0.3.2
+pnpm add github:The-Alleato-Group/alleato-ui#v0.4.0
 ```
 
 To update an app, change the tag in its `package.json` and reinstall.
@@ -93,6 +93,66 @@ Dark mode is the `.dark` class on an ancestor (next-themes `attribute="class"`).
 Optional peers, needed only for the component that uses them: `recharts`
 (chart), `react-hook-form` (form), `sonner` + `next-themes` (sonner),
 `next` (kpi, section-card links), `framer-motion` (animated empty state).
+
+## Share page layouts across projects
+
+Page layout and phone-card presentation are available without Next.js route
+hooks or Alleato API dependencies. Use the same package setup above:
+
+```tsx
+import { PageShellFrame } from "@alleato/ui/layout/page-shell-frame";
+import { PageTabs } from "@alleato/ui/layout/page-tabs";
+import { MobileCardList } from "@alleato/ui/ds/mobile-card-list";
+
+type RecordRow = { id: string; name: string };
+type RecordsPageProps = {
+  pathname: string;
+  search: string;
+  navigate: (href: string) => void;
+  rows: RecordRow[];
+};
+
+function RecordsPage({ pathname, search, navigate, rows }: RecordsPageProps) {
+  return (
+    <PageShellFrame
+      variant="table"
+      header={
+        <PageTabs
+          pathname={pathname}
+          search={search}
+          onNavigate={navigate}
+          tabs={[{ label: "Records", href: "/records" }]}
+        />
+      }
+    >
+      <MobileCardList
+        items={rows}
+        columns={[{ id: "name", label: "Name", render: (row) => row.name }]}
+        getRowId={(row) => row.id}
+        onRowClick={(row) => navigate(`/records/${row.id}`)}
+        hasRowActions={false}
+      />
+    </PageShellFrame>
+  );
+}
+```
+
+`MobileCardList` is the phone presentation (`sm:hidden`); the host supplies its
+desktop table, data, selection state and permitted actions. `PageTabs` requires
+an explicit `onNavigate` callback, which may update a router or local state.
+Pass `scrollResetKey` to `PageShellFrame` when host navigation changes to retain
+the existing form-scroll behavior. The host supplies its page header as a slot.
+
+`PageContainer`, `WorkspaceGutterProvider` and `TablePageLayoutProvider` are
+exported under `layout/page-container`, `layout/workspace-gutter-context` and
+`layout/table-page-layout-context`. Import the providers and hooks from the
+package so every consumer observes the same layout ownership. A workspace that
+already supplies horizontal gutters wraps its children in
+`WorkspaceGutterProvider`; nested containers then stay flush at every breakpoint.
+
+Full `UnifiedTablePage` and document-upload APIs remain app-owned; see the
+[shared library plan](docs/tasks/tasks-shared-ui-library.md) for their extraction
+boundaries. These exports are web React components, not React Native controls.
 
 ## Rules
 

@@ -4,11 +4,14 @@ id_prefix: AUI
 status: in-progress
 project: Alleato OS
 created: 2026-09-29
-updated: 2026-09-30
+updated: 2026-10-10
 source: Megan, 2026-09-24 + 2026-09-29 — "consistent components across the main app and the docs ... a shared UI component library with shadcn"
 ---
 
 # Shared Alleato UI library
+
+Delivery lane: Standard (bounded presentation extraction; existing routing, data,
+permission and persistence contracts stay with their applications).
 
 One package owns the Alleato look — design tokens, fonts, and the shadcn
 primitives — and every Alleato web app installs it instead of keeping its own
@@ -66,13 +69,44 @@ Gate: main app deployed, screenshots match. PASSED 2026-09-29.
 - [ ] AUI-051: Second `ds` batch: components tied to app helpers (DetailField/InlineEditField/EditableDetailField, date-range-picker, document-picker, local-date-time, trend-metric-*, comment-composer/thread, mention-textarea, rich-text). Each needs its app dependency (formatters, date utils, mentions, API client) passed in or moved first. Effort: L. v0.3.2 includes the pure design-system components and their app adoption in project-management PR #2139; `document-picker` still owns project-specific attachment APIs and needs a data/presentation boundary ([issue #2141](https://github.com/The-Alleato-Group/project-management/issues/2141)). Production visual proof is pending.
 - [ ] AUI-052: ASRS P30 on package components (owned by the ASRS Orchestrator; Stage A foundation in progress, Stage B screens after LC-076). Effort: L
 
+## P6 — Portable page layouts and responsive list presentation
+
+Acceptance contract: extract the existing canonical implementations, preserve
+their markup, responsive classes and interaction behavior, and make routing and
+identity explicit host adapters. A React consumer must not need PM's aliases,
+project context or API client to render these components. The package owns both
+layout contexts so consumers cannot accidentally create separate providers.
+
+- [x] AUI-060: Move PageContainer, workspace/table layout contexts, PageTabs presentation and PageShellFrame into the package. **Files:** `src/layout/page-container.tsx`, `workspace-gutter-context.tsx`, `table-page-layout-context.tsx`, `page-tabs.tsx`, `page-shell-frame.tsx`, `package.json`. **Done when:** package exports typecheck and focused tests prove nested gutter ownership, navigation callbacks and form scroll reset. Effort: M. Evidence: `pnpm check` passed typecheck and 149 tests on 2026-10-10; the 11 focused layout tests exercise these boundaries without Next.js routing.
+- [x] AUI-061: Move the existing MobileCardList into the package with a structural column contract. **Files:** `src/ds/mobile-card-list.tsx`, `test/layouts.test.tsx`. **Done when:** tests prove identity/metadata, selection, keyboard activation, row permission predicates and propagation without importing UnifiedTablePage. Effort: M. Evidence: package tests pass selection isolation, keyboard activation, row-click predicates and empty/identity handling; no app alias or network imports remain.
+- [ ] AUI-062: Replace PM and Training layout copies with re-exports or routing/header adapters and pin the release. **Files:** PM and Training package/lock files, `components/layout/{PageContainer,PageTabs,page-shell,workspace-gutter-context,table-page-layout-context}.tsx`, PM `tables/unified/mobile-card-list.tsx`, shared-package guardrails. **Done when:** focused consumer tests pass and guardrails reject a recreated local presentation owner. Effort: M.
+- [ ] AUI-063: Release the package and publish the exact consumer scope. **Files:** package version/readme, this plan, PM `WORKING_CONTEXT.md`. **Done when:** immutable tag, source SHA/readback and applicable deployment receipt are recorded. Effort: S.
+- [ ] AUI-064: Capture and inspect desktop/mobile proof on a canonical consumer route. **Files:** `docs/tasks/evidence/shared-layouts/`. **Done when:** the changed consumer version renders on the canonical route and the screenshots are viewable in the closeout. Effort: M.
+
+Gate: P6 remains open until source publication, consumer checks and deployed
+desktop/mobile proof are all recorded. A component render is package evidence,
+not proof of a deployed application.
+
+## P7 — Remaining application presentation boundaries
+
+- [ ] AUI-070: Separate UnifiedTablePage's portable table/toolbar/state presentation from app preferences, reporting and shell adapters. **Files:** PM `components/tables/unified/`, package table modules. **Done when:** existing table regressions pass with a cross-project consumer and no copied table configuration/JSX. Effort: L.
+- [ ] AUI-071: Finish the document picker boundary tracked in PM issue #2141. **Files:** package presentation and PM attachment adapter. **Done when:** APIs, upload/storage and permissions stay app-owned while presentation is shared and verified. Effort: L.
+
+Gate: do not claim all application components are portable while these boundaries
+or ASRS AUI-052 remain open.
+
 ## Decisions & blockers
+
+- 2026-10-10 — P6 starts from PM `origin/main` (not the older detached primary checkout). The primary checkout has unrelated package metadata edits, so an isolated clean main checkout owns the conflicting consumer files. The existing package plan remains the single cross-repository checklist.
+- 2026-10-10 — Full PageHeader/project-context presentation and UnifiedTablePage are not safe copy targets. P6 extracts the shell frame and tab/card owners first; host adapters retain header identity and navigation. P7 records the remaining boundaries.
 
 - 2026-09-29 — ~~Blocked on Megan for npm~~ Dropped (Megan): GitHub tags are enough. Was: create the free npm org `alleato` and add a trusted publisher (repo `The-Alleato-Group/alleato-ui`, workflow `release.yml`). Everything else proceeds on GitHub tags.
 - 2026-09-29 — Components ship as TypeScript source, not a compiled bundle. Every consumer is Next.js, which compiles it via `transpilePackages`, and Tailwind must scan the source anyway. No build step means no `"use client"` loss and no dist/source drift.
 - 2026-09-29 — A package, not a shadcn copy-paste registry: copying files into each app is how `training/` drifted.
 
 ## Log
+
+- 2026-10-10 — Resumed shared component extraction. Owned package files are the P6 exports, focused tests, README/version and this plan. Owned consumer files are the exact P6 app adapters, metadata, lockfiles and shared-package guardrails; unrelated primary-checkout files are preserved.
 
 - 2026-09-30 — v0.3.1 candidate adds InlineEditField and EditableDetailField to the v0.3.0 second batch. `CommentComposer` takes author identity from its consumer; rich-text parsing remains React-node based without raw HTML execution. The document picker remains an app data adapter until its API and upload boundary is separated from presentation.
 
@@ -87,3 +121,5 @@ Gate: main app deployed, screenshots match. PASSED 2026-09-29.
 - 2026-09-29 — v0.1.0 tagged; Learning app switched (project-management `d21c20e3cb`), release pending the 30-minute controller. v0.1.0 was built from a stale checkout (table headers still uppercase, old button hover, old `--surface-alt`); v0.1.1 resynced from origin/main with `scripts/sync-from-app.mjs`. Mintlify step dropped (site retired 2026-09-25). ASRS token adoption handed to its own phase-gated session.
 
 - 2026-09-29 — Plan created; repo created (public).
+
+- 2026-10-10 — P6 package candidate v0.4.0 passes `pnpm check` (typecheck, 149 tests); focused source-linked PM checks pass 126 tests and Training shared ownership checks pass 93. Source-linked checks map React to the consumer peer to avoid a second React instance. Training also replaces its eight remaining v0.3 package-owned DS copies; identity stays in its CommentComposer adapter. Consumer publication and deployed visual proof remain open.
