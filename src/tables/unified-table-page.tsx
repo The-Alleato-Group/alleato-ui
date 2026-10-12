@@ -3803,7 +3803,12 @@ export function UnifiedTablePage<T>({
         <Button
           type="button"
           variant="ghost"
-          className="flex h-auto min-h-8 w-full min-w-0 items-center justify-between gap-2 px-0 py-0 text-left font-normal hover:bg-transparent focus-visible:ring-1 focus-visible:ring-ring"
+          className={cn(
+            "flex h-auto min-h-8 w-full min-w-0 items-center justify-between gap-2 rounded-md border border-transparent px-0 py-0 font-normal hover:border-border hover:bg-transparent focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring",
+            columnAlignment === "right" && "text-right",
+            columnAlignment === "center" && "text-center",
+            columnAlignment === "left" && "text-left",
+          )}
           data-row-interactive="true"
           aria-label={`Edit ${column.label}`}
           title={`Edit ${column.label}`}
@@ -3812,7 +3817,16 @@ export function UnifiedTablePage<T>({
             startInlineEdit(item, column, surface);
           }}
         >
-          <span className="min-w-0 flex-1 truncate">{column.render(item)}</span>
+          <span
+            className={cn(
+              "min-w-0 flex-1 truncate",
+              columnAlignment === "right" && "text-right",
+              columnAlignment === "center" && "text-center",
+              columnAlignment === "left" && "text-left",
+            )}
+          >
+            {column.render(item)}
+          </span>
           <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover/cell:opacity-100 group-focus-within/cell:opacity-100" />
         </Button>
       )
@@ -4498,26 +4512,37 @@ export function UnifiedTablePage<T>({
         shouldRenderTableView &&
         (groupingConfig?.indentItems ? (
           <div className="sm:hidden space-y-3">
-            {renderEntries
-              .filter(
-                (entry): entry is Extract<RenderEntry, { kind: "group" }> =>
-                  entry.kind === "group",
-              )
-              .map((entry) => (
-                <React.Fragment key={entry.key}>
-                  <div className="bg-muted/40 text-muted-foreground font-semibold">
-                    {renderGroupHeading(entry)}
-                  </div>
-                  {!entry.collapsed &&
-                    renderMobileItems(
-                      paginatedItems.filter(
-                        (item) =>
-                          groupingConfig.getGroupValue(item) ===
-                          entry.groupValue,
-                      ),
-                    )}
-                </React.Fragment>
-              ))}
+            {[
+              ...new Set(
+                paginatedItems.map((item) =>
+                  groupingConfig.getGroupValue(item),
+                ),
+              ),
+            ]
+              .sort((left, right) => left.localeCompare(right))
+              .map((groupValue) => {
+                const entry = renderEntries.find(
+                  (
+                    candidate,
+                  ): candidate is Extract<RenderEntry, { kind: "group" }> =>
+                    candidate.kind === "group" &&
+                    candidate.groupValue === groupValue,
+                );
+                const groupItems = paginatedItems.filter(
+                  (item) => groupingConfig.getGroupValue(item) === groupValue,
+                );
+                const collapsed = collapsedGroupValues.includes(groupValue);
+                return (
+                  <React.Fragment key={`mobile-group::${groupValue}`}>
+                    {entry ? (
+                      <div className="bg-muted/40 text-muted-foreground font-semibold">
+                        {renderGroupHeading(entry)}
+                      </div>
+                    ) : null}
+                    {!collapsed && renderMobileItems(groupItems)}
+                  </React.Fragment>
+                );
+              })}
           </div>
         ) : (
           renderMobileItems(paginatedItems)

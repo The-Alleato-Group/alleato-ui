@@ -286,6 +286,29 @@ describe("portable unified table", () => {
 });
 
 describe("draft price table behavior", () => {
+  it("keeps numeric editable triggers right-aligned with a hover border", () => {
+    const value = props();
+    value.table.columns = [
+      {
+        id: "price",
+        label: "Price",
+        align: "right",
+        render: (row) => row.status,
+        editable: true,
+        editValue: (row) => row.status,
+      },
+    ];
+    mount(value);
+
+    const trigger = screen
+      .getAllByRole("button", { name: "Edit Price" })
+      .find((button) => button.classList.contains("text-right"));
+    expect(trigger).toBeTruthy();
+    expect(trigger?.classList.contains("text-right")).toBe(true);
+    expect(trigger?.classList.contains("hover:border-border")).toBe(true);
+    expect(trigger?.classList.contains("border-transparent")).toBe(true);
+  });
+
   it("moves between visible editable rows, skips locked rows, and resets with Escape", async () => {
     const edit = vi.fn();
     const revert = vi.fn();
@@ -342,6 +365,30 @@ describe("draft price table behavior", () => {
       screen.getAllByRole("button", { name: "Expand Draft" })[1].textContent,
     ).toContain("1 edited");
     expect(screen.queryByRole("cell", { name: "Bravo" })).toBeNull();
+  });
+
+  it("keeps mobile rows when their group heading is suppressed", () => {
+    const value = props();
+    value.table.grouping = {
+      getGroupValue: (row) => row.status,
+      getGroupLabel: (groupValue) => groupValue,
+      shouldRenderGroupHeader: (groupValue) => groupValue !== "Draft",
+      indentItems: true,
+    };
+    const { container } = mount(value);
+
+    const mobileGroups = [...container.querySelectorAll("div")].find(
+      (element) =>
+        element.className.includes("sm:hidden") &&
+        element.className.includes("space-y-3"),
+    );
+    expect(mobileGroups).toBeTruthy();
+    const mobileCards = [
+      ...(mobileGroups?.querySelectorAll('[class*="rounded-2xl"]') ?? []),
+    ];
+    expect(mobileCards.some((card) => card.textContent?.includes("Bravo"))).toBe(
+      true,
+    );
   });
 
   it("uses the domain value after reset instead of reopening a stale cached draft", async () => {
