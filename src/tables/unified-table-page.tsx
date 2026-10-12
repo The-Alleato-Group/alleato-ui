@@ -3823,11 +3823,11 @@ export function UnifiedTablePage<T>({
 
   function renderMobileItems(items: T[]) {
     return (
-      <MobileCardList
+      <MobileCardList<T>
         items={items}
         columns={table.controlledInlineEditing ? orderedVisibleColumns.map((column) => ({
           ...column,
-          render: (item) =>
+          render: (item: T) =>
             renderInlineEditableValue(
               item,
               column,
