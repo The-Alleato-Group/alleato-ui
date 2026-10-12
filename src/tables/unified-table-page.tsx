@@ -1,9 +1,27 @@
 "use client";
 
 import * as React from "react";
-import { useTableHost, type HeaderAction, type HeaderMenuItem, type HeaderPrimaryAction, type BulkEditField, type BulkEditValue, type SavedTableView, type TablePaginationBehavior, type TableSidePanelBodyLayout } from "./table-host";
-import { DEFAULT_SPLIT_PAGE_PRIMARY_PANE_WIDTH, useSplitPage } from "../components/split-page";
-import { SplitPageWorkspaceDetailContent, SplitPageWorkspaceFrame, SplitPageWorkspacePanels, SplitPageWorkspaceRailHeader } from "../components/split-page-workspace";
+import {
+  useTableHost,
+  type HeaderAction,
+  type HeaderMenuItem,
+  type HeaderPrimaryAction,
+  type BulkEditField,
+  type BulkEditValue,
+  type SavedTableView,
+  type TablePaginationBehavior,
+  type TableSidePanelBodyLayout,
+} from "./table-host";
+import {
+  DEFAULT_SPLIT_PAGE_PRIMARY_PANE_WIDTH,
+  useSplitPage,
+} from "../components/split-page";
+import {
+  SplitPageWorkspaceDetailContent,
+  SplitPageWorkspaceFrame,
+  SplitPageWorkspacePanels,
+  SplitPageWorkspaceRailHeader,
+} from "../components/split-page-workspace";
 import { TableSidePanel } from "./table-side-panel";
 
 import { useStoredPreference } from "../hooks/use-stored-preference";
@@ -81,11 +99,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/dropdown-menu";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "../components/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../components/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -1051,6 +1065,10 @@ export interface TableColumn<T> extends ColumnConfig {
   onEdit?: (item: T, value: string) => void | boolean | Promise<void | boolean>;
   editEmptyLabel?: string;
   editInputType?: React.HTMLInputTypeAttribute;
+  /** Spreadsheet navigation between visible, unlocked rows; opt-in only. */
+  editNavigation?: boolean;
+  /** Revert the domain value (for example to a price-list baseline) on Escape. */
+  onRevert?: (item: T) => void;
   /**
    * "cell" lets the whole cell enter edit mode. "icon" keeps rendered content
    * available for row/detail navigation and only opens editing from the pencil.
@@ -1077,6 +1095,7 @@ export interface TableColumn<T> extends ColumnConfig {
     onChange: (value: string) => void;
     onCommit: (value?: string) => void;
     onCancel: () => void;
+    onNavigate: (direction: 1 | -1, value?: string) => void;
   }) => ReactNode;
 }
 
@@ -1154,7 +1173,7 @@ export function deriveBulkEditFields<T>(
 
 type TableColumnAlignment = "left" | "center" | "right";
 /** Where an inline editor was opened: the grid cell or the row's detail pane. */
-type InlineEditSurface = "grid" | "pane";
+type InlineEditSurface = "grid" | "pane" | "mobile";
 
 // Identifiers win over money words: "Payment #", "payment_number", "Check #",
 // "Invoice Ref" are record numbers, not amounts, and read left-aligned like
@@ -1399,6 +1418,9 @@ export interface UnifiedTablePageProps<T> {
       groupFooterGap?: "sm" | "md";
       labelColumnId?: string;
       collapsible?: boolean;
+      /** Domain status stays visible while the group is collapsed. */
+      getGroupStatus?: (items: T[], groupValue: string) => ReactNode;
+      indentItems?: boolean;
       onMoveToGroup?: (
         item: T,
         targetGroupValue: string,
@@ -1474,6 +1496,10 @@ export interface UnifiedTablePageProps<T> {
      */
     fixedColumnWidths?: boolean;
     stickyHeader?: boolean;
+    /** Draft forms own their values; do not cache them or announce a persisted update. */
+    controlledInlineEditing?: boolean;
+    /** Shared whole-row focus treatment, with emphasis on the identifying column. */
+    highlightEditingRow?: boolean;
     onRowOrderChange?: (orderedRowIds: string[]) => void;
     /** Density preset. "compact" applies tighter padding and smaller text. */
     density?: "default" | "compact";
@@ -1667,7 +1693,9 @@ export interface UnifiedTablePageProps<T> {
 
 // A hidden header has no mobile toolbar slot. Keep its sole above-table
 // toolbar reachable at every width; visible headers retain their mobile slot.
-export function aboveTableToolbarClassName(headerHidden: boolean | undefined): string {
+export function aboveTableToolbarClassName(
+  headerHidden: boolean | undefined,
+): string {
   return headerHidden
     ? "flex min-w-0 justify-end"
     : TABLE_ABOVE_TABLE_TOOLBAR_CLASSNAME;
@@ -1803,7 +1831,19 @@ export function UnifiedTablePage<T>({
   columnGroups,
   reportContext,
 }: UnifiedTablePageProps<T>): ReactElement {
-  const { PageHeader, PageTabs, HeaderActions, SectionRuleHeading, BulkEditDialog, useTableSidePanelController, readUnifiedTablePreferences, saveUnifiedTablePreferences, reportNonCriticalFailure, toast, storage } = useTableHost();
+  const {
+    PageHeader,
+    PageTabs,
+    HeaderActions,
+    SectionRuleHeading,
+    BulkEditDialog,
+    useTableSidePanelController,
+    readUnifiedTablePreferences,
+    saveUnifiedTablePreferences,
+    reportNonCriticalFailure,
+    toast,
+    storage,
+  } = useTableHost();
   const readStoredPerPage = () => readUnifiedTablePreferences().perPage ?? 25;
   const readStoredPaginationBehavior = () => readUnifiedTablePreferences().paginationBehavior ?? "pages";
   const resolvedFeatures: Required<UnifiedTableFeatures> = {
@@ -2047,13 +2087,13 @@ export function UnifiedTablePage<T>({
     const itemsById = new Map(
       visibleItemsRef.current.map((item) => [table.getRowId(item), item]),
     );
-    const items = selectedIds.flatMap(id => {
+    const items = selectedIds.flatMap((id) => {
       const item = itemsById.get(id);
       return item && (table.allowDelete?.(item) ?? true) ? [item] : [];
     });
     if (items.length > 0) {
       if (table.onDeleteBatch) table.onDeleteBatch(items);
-      else items.forEach(item => table.onDelete!(item));
+      else items.forEach((item) => table.onDelete!(item));
     }
     handleSelectAll(false);
     setBulkDeleteDialogOpen(false);
@@ -3520,12 +3560,14 @@ export function UnifiedTablePage<T>({
       const cellKey = `${rowId}::${column.id}`;
       const nextValue = value.trim();
       const currentValue =
-        inlineEdits[cellKey] ?? column.editValue?.(item) ?? "";
+        (table.controlledInlineEditing ? undefined : inlineEdits[cellKey]) ??
+        column.editValue?.(item) ??
+        "";
 
       if (nextValue === currentValue) {
         setEditingCell(null);
         setEditingValue("");
-        return;
+        return true;
       }
 
       // Tab moves focus and fires blur after keydown. Keep the actual mutation
@@ -3537,12 +3579,15 @@ export function UnifiedTablePage<T>({
         setSavingCell({ rowId, columnId: column.id });
         if (column.onEdit) {
           const accepted = await column.onEdit(item, nextValue);
-          if (accepted === false) return;
+          if (accepted === false) return false;
         }
-        setInlineEdits((prev) => ({ ...prev, [cellKey]: nextValue }));
-        toast.success(`${column.label} updated`, {
-          id: `unified-table-cell-updated-${column.id}`,
-        });
+        if (!table.controlledInlineEditing) {
+          setInlineEdits((prev) => ({ ...prev, [cellKey]: nextValue }));
+          toast.success(`${column.label} updated`, {
+            id: `unified-table-cell-updated-${column.id}`,
+          });
+        }
+        return true;
       } catch (error) {
         toast.error("Cell update issue", {
           id: "unified-table-cell-update",
@@ -3558,7 +3603,7 @@ export function UnifiedTablePage<T>({
         setSavingCell(null);
       }
     },
-    [inlineEdits],
+    [inlineEdits, table.controlledInlineEditing],
   );
 
   const startInlineEdit = React.useCallback(
@@ -3573,10 +3618,34 @@ export function UnifiedTablePage<T>({
       const rowId = table.getRowId(item);
       const cellKey = `${rowId}::${column.id}`;
       setEditingCell({ rowId, columnId: column.id, surface });
-      setEditingValue(inlineEdits[cellKey] ?? column.editValue(item));
+      setEditingValue(
+        (table.controlledInlineEditing ? undefined : inlineEdits[cellKey]) ??
+          column.editValue(item),
+      );
     },
     [inlineEdits, resolvedFeatures.enableInlineEditing, table],
   );
+
+  async function navigateInlineEdit(
+    item: T,
+    column: TableColumn<T>,
+    direction: 1 | -1,
+    value: string,
+    surface: InlineEditSurface,
+  ) {
+    const visible = renderEntries.flatMap((entry) =>
+      entry.kind === "row" && column.isEditable?.(entry.item) !== false
+        ? [entry.item]
+        : [],
+    );
+    const index = visible.findIndex(
+      (row) => table.getRowId(row) === table.getRowId(item),
+    );
+    const next = index < 0 ? undefined : visible[index + direction];
+    if (await commitInlineEdit(item, column, table.getRowId(item), value)) {
+      if (next) startInlineEdit(next, column, surface);
+    }
+  }
 
   /**
    * One editable-value renderer for every surface that shows a column's value
@@ -3623,7 +3692,17 @@ export function UnifiedTablePage<T>({
               rowId,
               nextValue ?? editingValue,
             ),
+          onNavigate: (direction, nextValue) => {
+            void navigateInlineEdit(
+              item,
+              column,
+              direction,
+              nextValue ?? editingValue,
+              surface,
+            );
+          },
           onCancel: () => {
+            column.onRevert?.(item);
             setEditingCell(null);
             setEditingValue("");
           },
@@ -3664,13 +3743,33 @@ export function UnifiedTablePage<T>({
           onChange={(event) => setEditingValue(event.target.value)}
           onClick={(event) => event.stopPropagation()}
           onBlur={() => commitInlineEdit(item, column, rowId, editingValue)}
+          onFocus={
+            column.editNavigation
+              ? (event) => event.currentTarget.select()
+              : undefined
+          }
           onKeyDown={(event) => {
+            if (
+              column.editNavigation &&
+              ["Enter", "ArrowDown", "ArrowUp"].includes(event.key)
+            ) {
+              event.preventDefault();
+              void navigateInlineEdit(
+                item,
+                column,
+                event.key === "ArrowUp" ? -1 : 1,
+                editingValue,
+                surface,
+              );
+              return;
+            }
             if (event.key === "Enter") {
               event.preventDefault();
               void commitInlineEdit(item, column, rowId, editingValue);
             }
             if (event.key === "Escape") {
               event.preventDefault();
+              column.onRevert?.(item);
               setEditingCell(null);
               setEditingValue("");
             }
@@ -3721,6 +3820,90 @@ export function UnifiedTablePage<T>({
       column.render(item)
     );
   };
+
+  function renderMobileItems(items: T[]) {
+    return (
+      <MobileCardList
+        items={items}
+        columns={table.controlledInlineEditing ? orderedVisibleColumns.map((column) => ({
+          ...column,
+          render: (item) =>
+            renderInlineEditableValue(
+              item,
+              column,
+              resolveColumnAlignment(column, "left"),
+              "mobile",
+            ),
+        })) : orderedVisibleColumns}
+        getRowId={table.getRowId}
+        activeRowId={effectiveActiveRowId}
+        editingRowId={
+          table.highlightEditingRow && editingCell?.surface === "mobile"
+            ? editingCell.rowId
+            : undefined
+        }
+        onRowClick={table.onRowClick ? activateRow : undefined}
+        allowRowClick={table.allowRowClick}
+        selectedIds={hasRowSelection ? selectedIds : undefined}
+        onSelectRow={hasRowSelection ? handleSelectRow : undefined}
+        isFetching={data.isFetching}
+        rowActions={table.rowActions}
+        onView={table.onView}
+        viewLabel={table.viewLabel}
+        onEdit={table.onEdit}
+        allowEdit={table.allowEdit}
+        onDelete={table.onDelete ? handleDeleteIntent : undefined}
+        allowDelete={table.allowDelete}
+        hasRowActions={hasRowActions}
+      />
+    );
+  }
+
+  function renderGroupHeading(entry: Extract<RenderEntry, { kind: "group" }>) {
+    return (
+      <>
+        {groupingConfig?.collapsible ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-6 w-full justify-start gap-1.5 px-0 text-xs font-semibold text-muted-foreground hover:bg-transparent"
+            aria-expanded={!entry.collapsed}
+            aria-label={`${entry.collapsed ? "Expand" : "Collapse"} ${entry.label}`}
+            onClick={() => toggleGroup(entry.groupValue)}
+          >
+            {entry.collapsed ? (
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
+            ) : (
+              <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+            )}
+            <span>{entry.label}</span>
+            <span className="font-normal tabular-nums opacity-70">
+              {entry.count}
+            </span>
+            {groupingConfig.getGroupStatus ? (
+              <span className="ml-auto font-normal">
+                {groupingConfig.getGroupStatus(
+                  paginatedItems.filter(
+                    (row) =>
+                      groupingConfig.getGroupValue(row) === entry.groupValue,
+                  ),
+                  entry.groupValue,
+                )}
+              </span>
+            ) : null}
+          </Button>
+        ) : (
+          <>
+            {entry.label}
+            <span className="ml-2 font-normal tabular-nums opacity-70">
+              {entry.count}
+            </span>
+          </>
+        )}
+      </>
+    );
+  }
 
   const rowVirtualizer = useVirtualizer({
     count: renderEntries.length,
@@ -4311,27 +4494,34 @@ export function UnifiedTablePage<T>({
       )}
 
       {/* Mobile card view */}
-      {showTable && shouldRenderTableView && (
-        <MobileCardList
-          items={paginatedItems}
-          columns={orderedVisibleColumns}
-          getRowId={table.getRowId}
-          activeRowId={effectiveActiveRowId}
-          onRowClick={table.onRowClick ? activateRow : undefined}
-          allowRowClick={table.allowRowClick}
-          selectedIds={hasRowSelection ? selectedIds : undefined}
-          onSelectRow={hasRowSelection ? handleSelectRow : undefined}
-          isFetching={data.isFetching}
-          rowActions={table.rowActions}
-          onView={table.onView}
-          viewLabel={table.viewLabel}
-          onEdit={table.onEdit}
-          allowEdit={table.allowEdit}
-          onDelete={table.onDelete ? handleDeleteIntent : undefined}
-          allowDelete={table.allowDelete}
-          hasRowActions={hasRowActions}
-        />
-      )}
+      {showTable &&
+        shouldRenderTableView &&
+        (groupingConfig?.indentItems ? (
+          <div className="sm:hidden space-y-3">
+            {renderEntries
+              .filter(
+                (entry): entry is Extract<RenderEntry, { kind: "group" }> =>
+                  entry.kind === "group",
+              )
+              .map((entry) => (
+                <React.Fragment key={entry.key}>
+                  <div className="bg-muted/40 text-muted-foreground font-semibold">
+                    {renderGroupHeading(entry)}
+                  </div>
+                  {!entry.collapsed &&
+                    renderMobileItems(
+                      paginatedItems.filter(
+                        (item) =>
+                          groupingConfig.getGroupValue(item) ===
+                          entry.groupValue,
+                      ),
+                    )}
+                </React.Fragment>
+              ))}
+          </div>
+        ) : (
+          renderMobileItems(paginatedItems)
+        ))}
 
       {/* Desktop table view */}
       {showTable && shouldRenderTableView && (
@@ -4854,40 +5044,7 @@ export function UnifiedTablePage<T>({
                                 : { paddingLeft: groupLabelOffsetPx }
                             }
                           >
-                            {groupingConfig?.collapsible ? (
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 gap-1.5 px-0 text-xs font-semibold text-muted-foreground hover:bg-transparent"
-                                aria-expanded={!entry.collapsed}
-                                aria-label={`${entry.collapsed ? "Expand" : "Collapse"} ${entry.label}`}
-                                onClick={() => toggleGroup(entry.groupValue)}
-                              >
-                                {entry.collapsed ? (
-                                  <ChevronRight
-                                    className="h-3.5 w-3.5"
-                                    aria-hidden="true"
-                                  />
-                                ) : (
-                                  <ChevronDown
-                                    className="h-3.5 w-3.5"
-                                    aria-hidden="true"
-                                  />
-                                )}
-                                <span>{entry.label}</span>
-                                <span className="font-normal tabular-nums opacity-70">
-                                  {entry.count}
-                                </span>
-                              </Button>
-                            ) : (
-                              <>
-                                {entry.label}
-                                <span className="ml-2 font-normal tabular-nums opacity-70">
-                                  {entry.count}
-                                </span>
-                              </>
-                            )}
+                            {renderGroupHeading(entry)}
                           </TableCell>
                         </TableRow>
                       );
@@ -4936,6 +5093,9 @@ export function UnifiedTablePage<T>({
                           }}
                           className={cn(
                             "group/row transition-colors duration-150",
+                            table.highlightEditingRow &&
+                              editingCell?.rowId === table.getRowId(item) &&
+                              "bg-muted border-l-2 border-l-primary",
                             rowClickable && "cursor-pointer hover:bg-muted/40",
                             effectiveActiveRowId === table.getRowId(item) &&
                               "bg-muted",
@@ -5089,6 +5249,14 @@ export function UnifiedTablePage<T>({
                                 }
                                 className={cn(
                                   "group/cell relative align-middle",
+                                  table.highlightEditingRow &&
+                                    index === 0 &&
+                                    editingCell?.rowId ===
+                                      table.getRowId(item) &&
+                                    "font-semibold",
+                                  groupingConfig?.indentItems &&
+                                    index === 0 &&
+                                    "pl-6",
                                   column.traceState === "active" && "bg-muted",
                                   column.traceState === "precedent" &&
                                     "bg-muted/70",
@@ -5160,29 +5328,33 @@ export function UnifiedTablePage<T>({
                                     (table.onEdit || table.onDelete) ? (
                                       <DropdownMenuSeparator />
                                     ) : null}
-                                    {table.onEdit && (table.allowEdit?.(item) ?? true) && (
-                                      <DropdownMenuItem
-                                        onClick={() => table.onEdit!(item)}
-                                      >
-                                        <Pencil className="mr-2 h-4 w-4" />
-                                        Edit
-                                      </DropdownMenuItem>
-                                    )}
                                     {table.onEdit &&
-                                    (table.allowEdit?.(item) ?? true) &&
-                                    table.onDelete &&
-                                    (table.allowDelete?.(item) ?? true) && (
-                                      <DropdownMenuSeparator />
-                                    )}
-                                    {table.onDelete && (table.allowDelete?.(item) ?? true) && (
-                                      <DropdownMenuItem
-                                        className="text-destructive"
-                                        onClick={() => handleDeleteIntent(item)}
-                                      >
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                      </DropdownMenuItem>
-                                    )}
+                                      (table.allowEdit?.(item) ?? true) && (
+                                        <DropdownMenuItem
+                                          onClick={() => table.onEdit!(item)}
+                                        >
+                                          <Pencil className="mr-2 h-4 w-4" />
+                                          Edit
+                                        </DropdownMenuItem>
+                                      )}
+                                    {table.onEdit &&
+                                      (table.allowEdit?.(item) ?? true) &&
+                                      table.onDelete &&
+                                      (table.allowDelete?.(item) ?? true) && (
+                                        <DropdownMenuSeparator />
+                                      )}
+                                    {table.onDelete &&
+                                      (table.allowDelete?.(item) ?? true) && (
+                                        <DropdownMenuItem
+                                          className="text-destructive"
+                                          onClick={() =>
+                                            handleDeleteIntent(item)
+                                          }
+                                        >
+                                          <Trash2 className="mr-2 h-4 w-4" />
+                                          Delete
+                                        </DropdownMenuItem>
+                                      )}
                                   </DropdownMenuContent>
                                 </DropdownMenu>
                               ) : null}

@@ -22,6 +22,8 @@ const formControlVariants = cva(
         default: "",
         inline:
           "border-0 !bg-transparent shadow-none focus-visible:ring-1 focus-visible:ring-ring",
+        "table-cell":
+          "border-transparent bg-transparent shadow-none hover:border-border focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring",
         table: compactSurfaceControlClassName,
       },
       size: {
