@@ -51,10 +51,10 @@ Gate: training deployed and screenshotted on production.
 
 ## P2 — Main app onto the package
 
-- [ ] AUI-020: `frontend/src/components/ui/*` shared primitives become re-exports of `@alleato/ui` (import paths unchanged); tokens from the package; duplicate token blocks deleted. **Done when:** before/after screenshots of 6 representative pages are identical. Effort: L. Reopened during the completion audit: the historical evidence covers three of the required six pages. Evidence: `af891fb7d1` live in production release `da06517bab`; /67/home and /67/budget pixel-identical to pre-change production; /67/commitments differs only by the table-toolbar consolidation from `159a55109c` (another session, same release).
+- [x] AUI-020: `frontend/src/components/ui/*` shared primitives become re-exports of `@alleato/ui` (import paths unchanged); tokens from the package; duplicate token blocks deleted. **Done when:** before/after screenshots of 6 representative pages are identical. Effort: L. Evidence: original adoption `af891fb7d1` is in Ready retained release `da06517bab`; authenticated comparisons against Ready pre-adoption `159a55109c` have zero changed pixels across Home, Commitments, Budget, Companies, Meetings and Schedule at 1280x720. Fresh independent reviewer `/root/primitive_history_review` inspected all 12 PNGs, receipts, ancestry and original v0.1.1 package pin and returned PASS on 2026-10-12. [Verification record](evidence/shared-primitives/VERIFICATION_SUMMARY.md); private screenshots remain in PM `tests/agent-browser-runs/2026-10-12-shared-ui-primitive-history/`.
 - [x] AUI-021: Guardrail — a check fails when a shared primitive in `components/ui` is anything but a re-export. **Done when:** the check runs in CI and fails on a forked copy. Effort: S Evidence: `shared-ui-package.test.ts` in frontend and training (re-export shape + no page-wide token redefinition); both mutations (re-forked badge.tsx, `:root { --primary }` in globals.css) turn it red. Runs in quality-gate full-suite and training-tests.
 
-Gate: main app deployed, screenshots match. PASSED 2026-09-29.
+Gate: PASSED 2026-10-12 — original primitive adoption deployed; six retained-release page pairs are pixel-identical and independently reviewed.
 
 ## P3 — ASRS onto the package
 
@@ -115,6 +115,8 @@ or ASRS AUI-052 remain open.
 - 2026-09-29 — A package, not a shadcn copy-paste registry: copying files into each app is how `training/` drifted.
 
 ## Log
+
+- 2026-10-12 — AUI-020 acceptance gap resolved using actual retained Ready deployments before `159a55109c2d5d81733b2eec14aabe71d607b949` and after `da06517bab06386ad1f01651d0efc83da40cc1ec`. Six unmodified 1280x720 page pairs have zero differing RGB pixels; browser warnings/errors were empty. A fresh independent reviewer checks all12 screenshots, receipt states/SHAs, primitive-adoption ancestry and v0.1.1 source ownership and returns PASS. No production rollback, record writes or permission changes occurred. Separately, current v0.6.1 consumer head `e7c9709` passes all required CI. The CLI said already queued while GraphQL showed no queue entry; a normal head-guarded enqueue now has an observed entry, with merge-group checks pending. Current six-page v0.5.1 baseline is retained separately for the table rollout.
 
 - 2026-10-12 — Immutable v0.6.1 source `0f817c22c7e3c51de432b8b747a54341c80e35ab`, tag object `86897c6c70fd04f88106fdcb381283eb7da30337`, [release readback](https://github.com/The-Alleato-Group/alleato-ui/releases/tag/v0.6.1) and both release/CI runs pass. Consumer PR #2956 now publishes `e7c97090b534745de391a57be82ffed21eccd6df`, including both final pins and repairs for two stale test ownership boundaries discovered by required CI. Actual frozen installs and138-file package comparisons pass in both apps. PM focused checks pass243; a different fresh reviewer `/root/consumer_ci_repair_review` passes the actual seven-file delta after PM18 repaired assertions and Training117 ownership/adapter checks. Required CI/merge/deployment proof remain open. Canonical `/tasks` detail/date/comment controls and mention suggestions were inspected at desktop/390px with private screenshots; the unsent draft was cleared and no records were changed.
 
