@@ -48,6 +48,8 @@ const buttonVariants = cva(
         "icon-sm": "size-8",
         "icon-lg": "size-10",
         control: "",
+        // Labeled primary action beneath a summary total (50px Figma frame).
+        summary: "h-12.5 text-base font-semibold",
         "control-icon": "size-11 px-0",
       },
     },

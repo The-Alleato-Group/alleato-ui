@@ -71,6 +71,7 @@ const STATUS_TO_VARIANT: Record<string, StatusVariant> = {
   // Warning statuses
   pending: "warning",
   "pending approval": "warning",
+  "pending review": "warning",
   "in progress": "warning",
   "in review": "warning",
   "under review": "warning",

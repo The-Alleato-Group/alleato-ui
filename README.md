@@ -16,7 +16,7 @@ version bump.
 Install from a GitHub tag (the package is not published to npm):
 
 ```bash
-pnpm add github:The-Alleato-Group/alleato-ui#v0.6.1
+pnpm add github:The-Alleato-Group/alleato-ui#v0.6.2
 ```
 
 To update an app, change the tag in its `package.json` and reinstall.
@@ -130,8 +130,8 @@ For a standalone React consumer, see
 includes both Tailwind styles and the table's compiled CSS module. Inspected
 desktop/phone captures and interaction results are in the
 [verification summary](docs/tasks/evidence/shared-tables/VERIFICATION_SUMMARY.md).
-Independent release-readiness review passed; deployed consumer proof remains
-tracked in the plan.
+Independent review and canonical deployed consumer proof for v0.6.1 passed;
+the remaining ASRS adoption and later releases are tracked in the plan.
 
 ## Share page layouts across projects
 
@@ -230,3 +230,8 @@ UNLICENSED — Alleato Group, all rights reserved. Built on
 `@alleato/ui/ds/document-picker` exports `DocumentAttachmentsView`, `LinkedDocumentsView`, and `DocumentLinkView`. Pass documents, document types, loading/upload/mutation state and callbacks from your app. `DocumentAttachmentsView` accepts `onFiles`, `onDelete`, `onDownload`, `onDocumentTypeChange`, and controlled edit state. The host retains entity policies, validation, permissions, API calls and query invalidation. Supply a heading slot and accepted file types from your app.
 
 [Standalone document example](docs/tasks/evidence/shared-documents/index.html) and [verification evidence](docs/tasks/evidence/shared-documents/VERIFICATION_SUMMARY.md) use sample data with host callbacks. They do not establish deployed application adoption.
+
+The labeled primary action beneath a summary total uses `Button size="summary"`.
+The package owns its 50px height and typography; hosts may still supply layout
+width such as `w-full`. Review statuses such as `pending_review` use the shared
+StatusBadge warning state after normalization.
