@@ -29,6 +29,10 @@ for (const sourceFile of [...files.map((entry) => path.join(root, 'src', entry))
   }
 }
 const compiler = await compile('@import "tailwindcss";\n@import "./styles/theme.css";', { base: root, onDependency: () => {} });
-const css = compiler.build([...candidates]);
+const bundledCss = outputs
+  .filter((item) => item.type === 'asset' && item.fileName.endsWith('.css'))
+  .map((item) => typeof item.source === 'string' ? item.source : new TextDecoder().decode(item.source))
+  .join('\n');
+const css = `${compiler.build([...candidates])}\n${bundledCss}`;
 fs.writeFileSync(path.join(dest, 'index.html'), `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><title>Shared layout consumer example</title><style>${css}</style></head><body><div id="root"></div><script>${bundle.replaceAll('</script', '<\\/script')}</script></body></html>`);
 console.log('Built standalone consumer from package exports and shared CSS.');

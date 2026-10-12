@@ -16,9 +16,9 @@ import {
 } from "../src/components/table";
 
 const srcDir = path.resolve(__dirname, "../src");
-const modules = ["components", "ds", "layout", "lib", "hooks"].flatMap((dir) =>
+const modules = ["components", "ds", "layout", "lib", "hooks", "tables"].flatMap((dir) =>
   readdirSync(path.join(srcDir, dir))
-    .filter((file) => /\.tsx?$/.test(file))
+    .filter((file) => /\.tsx?$/.test(file) && !file.endsWith(".d.ts"))
     .map((file) => `${dir}/${file}`),
 );
 

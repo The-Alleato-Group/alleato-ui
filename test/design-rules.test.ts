@@ -31,7 +31,7 @@ function codeLines(file: string) {
 
 describe("package source follows the Alleato design rules", () => {
   it("has no uppercase or widened tracking outside the allowed primitives", () => {
-    const offenders = ["components", "ds", "layout"].flatMap((dir) =>
+    const offenders = ["components", "ds", "layout", "tables"].flatMap((dir) =>
       readdirSync(path.join(srcDir, dir))
         .filter((file) => file.endsWith(".tsx"))
         .flatMap((file) => {
