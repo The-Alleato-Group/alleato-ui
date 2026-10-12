@@ -13,7 +13,8 @@ version bump.
 
 ## Install
 
-Install from a GitHub tag (the package is not published to npm):
+Install a published [GitHub release](https://github.com/The-Alleato-Group/alleato-ui/releases)
+tag (the package is not published to npm). The verified consumer release is v0.6.2:
 
 ```bash
 pnpm add github:The-Alleato-Group/alleato-ui#v0.6.2
@@ -130,8 +131,10 @@ For a standalone React consumer, see
 includes both Tailwind styles and the table's compiled CSS module. Inspected
 desktop/phone captures and interaction results are in the
 [verification summary](docs/tasks/evidence/shared-tables/VERIFICATION_SUMMARY.md).
-Independent review and canonical deployed consumer proof for v0.6.1 passed;
-the remaining ASRS adoption and later releases are tracked in the plan.
+Independent review and canonical deployed consumer proof passed for PM,
+Training and main-app ASRS on immutable v0.6.2. The
+[completed plan](docs/tasks/tasks-shared-ui-library.md) records the component
+owners, host adapters and reviewed deployment evidence.
 
 ## Share page layouts across projects
 
