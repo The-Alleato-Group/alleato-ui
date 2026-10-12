@@ -130,6 +130,50 @@ describe("portable mobile cards", () => {
     fireEvent.keyDown(screen.getByRole("button"), { key: "Enter" });
     expect(open).toHaveBeenCalledWith(item);
   });
+
+  it.each([
+    { editAllowed: true, deleteAllowed: false, action: "Edit" },
+    { editAllowed: false, deleteAllowed: true, action: "Delete" },
+  ])("exposes only the permitted $action callback without opening the row", async ({ editAllowed, deleteAllowed, action }) => {
+    const open = vi.fn(); const edit = vi.fn(); const remove = vi.fn();
+    render(<MobileCardList items={[item]} columns={columns} getRowId={(row) => row.id}
+      hasRowActions onRowClick={open} onEdit={edit} onDelete={remove}
+      allowEdit={(row) => row.id === item.id && editAllowed}
+      allowDelete={(row) => row.id === item.id && deleteAllowed} />);
+    const trigger = document.querySelector<HTMLButtonElement>('button[aria-haspopup="menu"]')!;
+    expect(trigger).toBeTruthy();
+    fireEvent.keyDown(trigger, { key: "Enter" });
+    const allowedAction = await screen.findByRole("menuitem", { name: action });
+    expect(screen.queryByRole("menuitem", { name: action === "Edit" ? "Delete" : "Edit" })).toBeNull();
+    expect(open).not.toHaveBeenCalled();
+    fireEvent.click(allowedAction);
+    expect(action === "Edit" ? edit : remove).toHaveBeenCalledWith(item);
+    expect(action === "Edit" ? remove : edit).not.toHaveBeenCalled();
+    expect(open).not.toHaveBeenCalled();
+  });
+
+  it("omits the actions trigger when every available operation is denied", () => {
+    const edit = vi.fn(); const remove = vi.fn();
+    render(<MobileCardList items={[item]} columns={columns} getRowId={(row) => row.id}
+      hasRowActions onEdit={edit} onDelete={remove} allowEdit={() => false} allowDelete={() => false} />);
+    expect(document.querySelector('button[aria-haspopup="menu"]')).toBeNull();
+    expect(screen.queryByRole("menuitem")).toBeNull();
+    expect(edit).not.toHaveBeenCalled(); expect(remove).not.toHaveBeenCalled();
+  });
+
+  it("isolates custom action clicks and keyboard activation from row navigation", () => {
+    const open = vi.fn(); const action = vi.fn();
+    render(<MobileCardList items={[item]} columns={columns} getRowId={(row) => row.id}
+      hasRowActions onRowClick={open}
+      rowActions={(row) => <button onClick={() => action(row)}>Inspect record</button>} />);
+    const button = screen.getByRole("button", { name: "Inspect record" });
+    fireEvent.keyDown(button, { key: "Enter" });
+    fireEvent.keyDown(button, { key: " " });
+    expect(open).not.toHaveBeenCalled();
+    fireEvent.click(button);
+    expect(action).toHaveBeenCalledWith(item);
+    expect(open).not.toHaveBeenCalled();
+  });
 });
 
 it("keeps the new portable exports independent of app aliases, routing and network clients", () => {
