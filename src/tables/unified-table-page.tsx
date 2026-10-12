@@ -442,6 +442,52 @@ export function resolveUnifiedTableSelectedCount(
   return selectedIds.length;
 }
 
+/**
+ * The rows a bulk delete will actually remove: selected, visible, and allowed
+ * by `allowDelete`. The confirmation counts these and the confirm handler
+ * deletes exactly these, so the number the user approves is the number
+ * deleted. Anything else in the selection is reported as skipped, never
+ * silently dropped.
+ */
+export function resolveBulkDeleteTargets<T>(
+  selectedIds: readonly string[],
+  visibleItems: readonly T[],
+  getRowId: (item: T) => string,
+  allowDelete?: (item: T) => boolean,
+): { items: T[]; skippedCount: number } {
+  const itemsById = new Map(
+    visibleItems.map((item) => [getRowId(item), item]),
+  );
+  const items = selectedIds.flatMap((id) => {
+    const item = itemsById.get(id);
+    return item && (allowDelete?.(item) ?? true) ? [item] : [];
+  });
+  return { items, skippedCount: selectedIds.length - items.length };
+}
+
+/**
+ * Internal selection may only hold rows the table can currently show and act
+ * on. A row deleted from its own menu, or dropped by search, a filter, or a
+ * page change, leaves the selection here instead of lingering as a phantom
+ * "1 selected". Returns `previous` unchanged when nothing was pruned so a
+ * state update can bail out.
+ *
+ * Cross-page selection is deliberately not a feature of the internal
+ * selection: bulk delete acts on visible rows only, so an off-page id could
+ * be counted but never deleted. A page that needs selection to survive a
+ * server page change owns it through the `selection` prop.
+ */
+export function pruneSelectionToRows<T>(
+  previous: string[],
+  rows: readonly T[],
+  getRowId: (item: T) => string,
+): string[] {
+  if (previous.length === 0) return previous;
+  const rowIds = new Set(rows.map(getRowId));
+  const next = previous.filter((id) => rowIds.has(id));
+  return next.length === previous.length ? previous : next;
+}
+
 export const DEFAULT_UNIFIED_TABLE_VIEWS: ViewMode[] = [
   "table",
   "split",
@@ -2084,13 +2130,14 @@ export function UnifiedTablePage<T>({
     if (!table.onDelete) return;
     // Deliberately built from the visible rows, not `data.items`: a selection
     // made before a rule was applied must not delete what the rule now hides.
-    const itemsById = new Map(
-      visibleItemsRef.current.map((item) => [table.getRowId(item), item]),
+    // The confirmation counts the same resolver's result, so the number the
+    // user approved is the number deleted.
+    const { items } = resolveBulkDeleteTargets(
+      selectedIds,
+      visibleItemsRef.current,
+      table.getRowId,
+      table.allowDelete,
     );
-    const items = selectedIds.flatMap((id) => {
-      const item = itemsById.get(id);
-      return item && (table.allowDelete?.(item) ?? true) ? [item] : [];
-    });
     if (items.length > 0) {
       if (table.onDeleteBatch) table.onDeleteBatch(items);
       else items.forEach((item) => table.onDelete!(item));
@@ -2690,6 +2737,53 @@ export function UnifiedTablePage<T>({
   // handlers (select-all, bulk delete), and an effect would leave it one render
   // stale — long enough for a click to act on rows a rule already hid.
   visibleItemsRef.current = dateRangeFilteredItems;
+
+  // Internal selection follows the rows: a deleted, searched-out, filtered-out
+  // or off-page row leaves it. Skipped while a load or refetch is in flight so
+  // an empty placeholder list cannot wipe a selection; the prune runs once the
+  // rows arrive. A parent that passes
+  // `selection` owns pruning (and may keep cross-page selection on purpose).
+  React.useEffect(() => {
+    if (selection || data.isLoading || data.isFetching) return;
+    setInternalSelectedIds((previous) =>
+      pruneSelectionToRows(previous, dateRangeFilteredItems, getRowIdRef.current),
+    );
+  }, [selection, data.isLoading, data.isFetching, dateRangeFilteredItems]);
+
+  // Resolved only while the dialog is open; the last result is kept through
+  // the close animation, after the confirm handler has cleared the selection,
+  // so the closing dialog does not flash "No items to delete".
+  const lastBulkDeleteTargetsRef = React.useRef<ReturnType<
+    typeof resolveBulkDeleteTargets<T>
+  > | null>(null);
+  const openBulkDeleteTargets = React.useMemo(
+    () =>
+      bulkDeleteDialogOpen
+        ? resolveBulkDeleteTargets(
+            selectedIds,
+            dateRangeFilteredItems,
+            table.getRowId,
+            table.allowDelete,
+          )
+        : null,
+    [
+      bulkDeleteDialogOpen,
+      dateRangeFilteredItems,
+      selectedIds,
+      table.allowDelete,
+      table.getRowId,
+    ],
+  );
+  if (openBulkDeleteTargets) {
+    lastBulkDeleteTargetsRef.current = openBulkDeleteTargets;
+  }
+  const bulkDeleteTargets =
+    openBulkDeleteTargets ?? lastBulkDeleteTargetsRef.current;
+  const deleteNoun = (count: number) =>
+    count === 1
+      ? (table.deleteCopy?.noun ?? "item")
+      : (table.deleteCopy?.pluralNoun ??
+        (table.deleteCopy ? `${table.deleteCopy.noun}s` : "items"));
 
   const sortedItems = React.useMemo(() => {
     if (!effectiveSorting?.sortBy) return dateRangeFilteredItems;
@@ -6242,27 +6336,38 @@ export function UnifiedTablePage<T>({
           open={bulkDeleteDialogOpen}
           onOpenChange={setBulkDeleteDialogOpen}
         >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                Delete {selectedIds.length}{" "}
-                {selectedIds.length === 1 ? (table.deleteCopy?.noun ?? "item") : (table.deleteCopy?.pluralNoun ?? (table.deleteCopy ? `${table.deleteCopy.noun}s` : "items"))}?
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {table.deleteCopy?.description ?? `This will permanently delete ${selectedIds.length} selected ${selectedIds.length === 1 ? "item" : "items"}. This action cannot be undone.`}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleBulkDeleteConfirm}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Delete {selectedIds.length}{" "}
-                {selectedIds.length === 1 ? (table.deleteCopy?.noun ?? "item") : (table.deleteCopy?.pluralNoun ?? (table.deleteCopy ? `${table.deleteCopy.noun}s` : "items"))}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
+          {bulkDeleteTargets && (
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {bulkDeleteTargets.items.length > 0
+                    ? `Delete ${bulkDeleteTargets.items.length} ${deleteNoun(bulkDeleteTargets.items.length)}?`
+                    : `No ${deleteNoun(2)} to delete`}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {bulkDeleteTargets.items.length > 0
+                    ? (table.deleteCopy?.description ??
+                      `This will permanently delete ${bulkDeleteTargets.items.length} selected ${deleteNoun(bulkDeleteTargets.items.length)}. This action cannot be undone.`)
+                    : `None of the ${bulkDeleteTargets.skippedCount} selected ${deleteNoun(bulkDeleteTargets.skippedCount)} can be deleted.`}
+                  {bulkDeleteTargets.items.length > 0 &&
+                    bulkDeleteTargets.skippedCount > 0 &&
+                    ` ${bulkDeleteTargets.skippedCount} other selected ${deleteNoun(bulkDeleteTargets.skippedCount)} can't be deleted and will be skipped.`}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                {bulkDeleteTargets.items.length > 0 && (
+                  <AlertDialogAction
+                    onClick={handleBulkDeleteConfirm}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Delete {bulkDeleteTargets.items.length}{" "}
+                    {deleteNoun(bulkDeleteTargets.items.length)}
+                  </AlertDialogAction>
+                )}
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          )}
         </AlertDialog>
       )}
       {hasBulkEdit && (
