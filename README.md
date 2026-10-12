@@ -16,7 +16,7 @@ version bump.
 Install from a GitHub tag (the package is not published to npm):
 
 ```bash
-pnpm add github:The-Alleato-Group/alleato-ui#v0.5.1
+pnpm add github:The-Alleato-Group/alleato-ui#v0.6.0
 ```
 
 To update an app, change the tag in its `package.json` and reinstall.
@@ -94,13 +94,13 @@ Optional peers, needed only for the component that uses them: `recharts`
 (chart), `react-hook-form` (form), `sonner` + `next-themes` (sonner),
 `next` (kpi, section-card links), `framer-motion` (animated empty state).
 
-## Share the full table across projects (v0.6.0 candidate)
+## Share the full table across projects (v0.6.0)
 
-The candidate moves the canonical `UnifiedTablePage`, `TableToolbar`, filter
+The release shares the canonical `UnifiedTablePage`, `TableToolbar`, filter
 builder, column ordering/resizing, inline editor, CSV helpers, scrollbar and
 panel presentation into `src/tables`. The split workspace, modal and panel
-primitives also have one package owner. Release and consumer adoption are still
-pending; the installation example above remains on the latest released tag.
+primitives also have one package owner. Release CI and independent review passed;
+PM and Training's deployed adoption is tracked in the shared library plan.
 
 ```tsx
 import { UnifiedTablePage } from "@alleato/ui/tables/unified-table-page";
@@ -129,7 +129,8 @@ For a standalone React consumer, see
 includes both Tailwind styles and the table's compiled CSS module. Inspected
 desktop/phone captures and interaction results are in the
 [verification summary](docs/tasks/evidence/shared-tables/VERIFICATION_SUMMARY.md).
-Independent review and deployed consumer proof remain pending.
+Independent release-readiness review passed; deployed consumer proof remains
+tracked in the plan.
 
 ## Share page layouts across projects
 
@@ -187,7 +188,7 @@ package so every consumer observes the same layout ownership. A workspace that
 already supplies horizontal gutters wraps its children in
 `WorkspaceGutterProvider`; nested containers then stay flush at every breakpoint.
 
-The v0.6.0 candidate shares `UnifiedTablePage` presentation through the host
+The v0.6.0 release shares `UnifiedTablePage` presentation through the host
 adapter described above. Document-upload APIs remain app-owned; see the
 [shared library plan](docs/tasks/tasks-shared-ui-library.md) for release and
 consumer acceptance. These exports are web React components, not React Native
