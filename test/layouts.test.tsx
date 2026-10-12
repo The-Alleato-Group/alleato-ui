@@ -90,6 +90,20 @@ describe("tabs with host-supplied routing", () => {
     ]} />);
     expect(screen.getByRole("button", { name: "Reports" }).getAttribute("aria-current")).toBe("page");
   });
+
+  it("title-cases page tabs and menu triggers while keeping small words lowercase", () => {
+    render(<PageTabs pathname="/records" onNavigate={vi.fn()} tabs={[
+      { label: "supplier prices", href: "/records" },
+      { label: "cost of goods", href: "/costs" },
+      { label: "all of accounting", href: "/accounting", items: [
+        { label: "accounts payable", href: "/accounting/ap" },
+      ] },
+    ]} />);
+
+    expect(screen.getByRole("button", { name: "Supplier Prices" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Cost of Goods" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "All of Accounting" })).toBeTruthy();
+  });
 });
 
 describe("portable mobile cards", () => {
