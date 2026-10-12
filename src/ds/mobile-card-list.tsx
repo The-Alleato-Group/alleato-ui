@@ -76,6 +76,8 @@ export interface MobileCardListProps<T> {
   rowActions?: (item: T) => ReactNode;
   /** Default view handler — renders a simple "…" > View menu item when no custom rowActions */
   onView?: (item: T) => void;
+  /** Specific wording when a row opens a named live surface. */
+  viewLabel?: string;
   /** Default edit handler — renders a simple "…" > Edit menu item when no custom rowActions */
   onEdit?: (item: T) => void;
   /** Hide Edit on rows this returns false for. */
@@ -99,6 +101,7 @@ export function MobileCardList<T>({
   isFetching,
   rowActions,
   onView,
+  viewLabel,
   onEdit,
   allowEdit,
   onDelete,
@@ -213,7 +216,7 @@ export function MobileCardList<T>({
                           {onView && (
                             <DropdownMenuItem onClick={() => onView(item)}>
                               <Eye className="mr-2 h-4 w-4" />
-                              View
+                              {viewLabel ?? "View"}
                             </DropdownMenuItem>
                           )}
                           {onView && (onEdit || onDelete) ? (

@@ -1378,6 +1378,8 @@ export interface UnifiedTablePageProps<T> {
     rowActions?: (item: T) => ReactNode;
     /** Called when user clicks View in the default row-actions menu. */
     onView?: (item: T) => void;
+    /** Specific wording when a row opens a named live surface. */
+    viewLabel?: string;
     /** Inline append affordance rendered once per visible group. */
     newRow?: {
       placeholder?: string;
@@ -1408,6 +1410,10 @@ export interface UnifiedTablePageProps<T> {
     allowEdit?: (item: T) => boolean;
     /** Called when user clicks Delete in the default row-actions menu. When provided without custom rowActions, renders a default "⋯" dropdown with View/Edit/Delete as available. */
     onDelete?: (item: T) => void;
+    /** Hand selected visible rows to the data owner in one request. */
+    onDeleteBatch?: (items: T[]) => void;
+    /** Domain wording for the existing delete confirmations. */
+    deleteCopy?: { noun: string; pluralNoun?: string; description?: string };
     /** Hide Delete on rows this returns false for. Defaults to showing Delete whenever `onDelete` is set. */
     allowDelete?: (item: T) => boolean;
     getRowId: (item: T) => string;
@@ -2041,10 +2047,14 @@ export function UnifiedTablePage<T>({
     const itemsById = new Map(
       visibleItemsRef.current.map((item) => [table.getRowId(item), item]),
     );
-    selectedIds.forEach((id) => {
+    const items = selectedIds.flatMap(id => {
       const item = itemsById.get(id);
-      if (item) table.onDelete!(item);
+      return item && (table.allowDelete?.(item) ?? true) ? [item] : [];
     });
+    if (items.length > 0) {
+      if (table.onDeleteBatch) table.onDeleteBatch(items);
+      else items.forEach(item => table.onDelete!(item));
+    }
     handleSelectAll(false);
     setBulkDeleteDialogOpen(false);
   }, [selectedIds, table, handleSelectAll]);
@@ -4314,6 +4324,7 @@ export function UnifiedTablePage<T>({
           isFetching={data.isFetching}
           rowActions={table.rowActions}
           onView={table.onView}
+          viewLabel={table.viewLabel}
           onEdit={table.onEdit}
           allowEdit={table.allowEdit}
           onDelete={table.onDelete ? handleDeleteIntent : undefined}
@@ -5142,7 +5153,7 @@ export function UnifiedTablePage<T>({
                                         onClick={() => table.onView!(item)}
                                       >
                                         <Eye className="mr-2 h-4 w-4" />
-                                        View
+                                        {table.viewLabel ?? "View"}
                                       </DropdownMenuItem>
                                     )}
                                     {table.onView &&
@@ -6012,10 +6023,9 @@ export function UnifiedTablePage<T>({
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete Item</AlertDialogTitle>
+              <AlertDialogTitle>{table.deleteCopy ? `Delete ${table.deleteCopy.noun}?` : "Delete Item"}</AlertDialogTitle>
               <AlertDialogDescription>
-                Are you sure you want to delete this item? This action cannot be
-                undone.
+                {table.deleteCopy?.description ?? "Are you sure you want to delete this item? This action cannot be undone."}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -6039,12 +6049,10 @@ export function UnifiedTablePage<T>({
             <AlertDialogHeader>
               <AlertDialogTitle>
                 Delete {selectedIds.length}{" "}
-                {selectedIds.length === 1 ? "item" : "items"}?
+                {selectedIds.length === 1 ? (table.deleteCopy?.noun ?? "item") : (table.deleteCopy?.pluralNoun ?? (table.deleteCopy ? `${table.deleteCopy.noun}s` : "items"))}?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete {selectedIds.length} selected{" "}
-                {selectedIds.length === 1 ? "item" : "items"}. This action
-                cannot be undone.
+                {table.deleteCopy?.description ?? `This will permanently delete ${selectedIds.length} selected ${selectedIds.length === 1 ? "item" : "items"}. This action cannot be undone.`}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -6054,7 +6062,7 @@ export function UnifiedTablePage<T>({
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 Delete {selectedIds.length}{" "}
-                {selectedIds.length === 1 ? "item" : "items"}
+                {selectedIds.length === 1 ? (table.deleteCopy?.noun ?? "item") : (table.deleteCopy?.pluralNoun ?? (table.deleteCopy ? `${table.deleteCopy.noun}s` : "items"))}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

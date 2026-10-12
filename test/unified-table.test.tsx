@@ -104,6 +104,33 @@ describe("portable unified table", () => {
     await vi.waitFor(() => expect(host.toast.error).toHaveBeenCalledWith("Cell update issue", expect.objectContaining({ description: "Record is locked" })));
     expect(screen.getByRole("cell", { name: "Alpha" })).toBeTruthy();
   });
+  it("preserves custom row view wording and domain delete copy", async () => {
+    const value = props();
+    value.table.onView = vi.fn();
+    value.table.viewLabel = "View live page";
+    value.table.onDelete = vi.fn();
+    value.table.deleteCopy = { noun: "page", description: "Removes the app page while keeping the source file." };
+    mount(value);
+    fireEvent.keyDown(screen.getAllByRole("button", { name: "Row actions" })[0], { key: "Enter" });
+    await vi.waitFor(() => expect(screen.getByRole("menuitem", { name: "View live page" })).toBeTruthy());
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
+    expect(screen.getByRole("alertdialog").textContent).toContain("Delete page?");
+    expect(screen.getByRole("alertdialog").textContent).toContain("Removes the app page while keeping the source file.");
+  });
+  it("batches only selected visible rows allowed by the delete predicate", () => {
+    const value = props(); const batch = vi.fn(); const single = vi.fn();
+    value.table.onDelete = single; value.table.onDeleteBatch = batch;
+    value.table.allowDelete = row => row.id === "a";
+    value.table.deleteCopy = { noun: "page", description: "Remove app pages only." };
+    value.selection = { selectedIds: ["a", "b", "hidden"], onSelectAll: vi.fn(), onSelectRow: vi.fn() };
+    mount(value);
+    fireEvent.click(screen.getByRole("button", { name: "Delete 3 selected" }));
+    const dialog = screen.getByRole("alertdialog");
+    expect(dialog.textContent).toContain("Remove app pages only.");
+    fireEvent.click(within(dialog).getByRole("button", { name: "Delete 3 pages" }));
+    expect(batch).toHaveBeenCalledExactlyOnceWith([records[1]]);
+    expect(single).not.toHaveBeenCalled();
+  });
   it("owns no application aliases or network endpoints", () => {
     for (const file of readdirSync(path.resolve("src/tables")).filter(file => /\.(tsx?|css)$/.test(file))) {
       const source = readFileSync(path.resolve("src/tables", file), "utf8");
