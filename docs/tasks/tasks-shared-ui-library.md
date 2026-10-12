@@ -107,6 +107,8 @@ or ASRS AUI-052 remain open.
 
 ## Decisions & blockers
 
+- 2026-10-12 — [PM #2963](https://github.com/The-Alleato-Group/project-management/issues/2963) tracks the ASRS target decision (`needs-megan`). Current ASRS ownership directs new estimator work into the main app and preserves standalone until verified cutover; older AUI-030/052 still require standalone P30 acceptance. Recommended target is the canonical PM estimator, with explicit supersession of the old standalone migration and component-level deployed proof. Neither old criterion is silently closed by current PM screenshots. The table rollout proceeds independently.
+
 - 2026-10-10 — P6 starts from PM `origin/main` (not the older detached primary checkout). The primary checkout has unrelated package metadata edits, so an isolated clean main checkout owns the conflicting consumer files. The existing package plan remains the single cross-repository checklist.
 - 2026-10-10 — Full PageHeader/project-context presentation and UnifiedTablePage are not safe copy targets. P6 extracts the shell frame and tab/card owners first; host adapters retain header identity and navigation. P7 records the remaining boundaries.
 
