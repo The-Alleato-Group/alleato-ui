@@ -1,0 +1,69 @@
+/*
+ * Canonical light visual contract for data-table workspaces.
+ *
+ * Tables are information-dense operational surfaces. They remain light even
+ * when the surrounding application follows the user's dark preference, so
+ * rows, controls, and financial values retain the contrast used for scanning.
+ * Keep these values aligned with the Snow theme in app/globals.css.
+ */
+.lightTheme {
+  color-scheme: light;
+  /* The tokens below only re-map variables; `color` itself is inherited as
+   * the already-computed body color, so in dark mode any descendant without
+   * its own text class (a bare <Label>, a select trigger) rendered white on
+   * the light surface. Re-anchor the inherited color here. */
+  color: hsl(var(--foreground));
+  --background: 0 0% 100%;
+  --foreground: var(--neutral-900);
+  --card: 0 0% 100%;
+  --card-foreground: var(--neutral-900);
+  --popover: 0 0% 100%;
+  --popover-foreground: var(--neutral-900);
+  --surface-alt: var(--neutral-50);
+  --surface-soft: var(--neutral-100);
+  --background-secondary: 210 20% 98.04%;
+  --surface-summary: 0 0% 97.6%;
+  --right-sidebar-bg: 0 0% 100%;
+  --primary: var(--brand-orange-500);
+  --primary-foreground: 0 0% 100%;
+  --action: 215 25% 31%;
+  --action-foreground: 0 0% 100%;
+  --secondary: var(--neutral-100);
+  --secondary-foreground: var(--neutral-900);
+  --muted: var(--neutral-100);
+  --muted-subtle: var(--neutral-50);
+  --muted-foreground: var(--neutral-600);
+  --input-placeholder: var(--neutral-500);
+  --heading-label: 215 28% 23%;
+  --accent: var(--neutral-100);
+  --accent-foreground: var(--neutral-900);
+  --light: var(--brand-orange-50);
+  --destructive: var(--status-error);
+  --destructive-foreground: 0 0% 100%;
+  --border: var(--neutral-300);
+  --input: var(--neutral-400);
+  --ring: var(--neutral-400);
+  --surface-inverse: var(--neutral-900);
+  --surface-elevated: 0 0% 100%;
+  --status-success: 160 94% 24%;
+  --status-success-bg: 152 81% 96%;
+  --status-success-border: 156 72% 67%;
+  --status-warning: 32 95% 37%;
+  --status-warning-bg: 48 100% 96%;
+  --status-warning-border: 45 96% 65%;
+  --status-error: 0 73% 42%;
+  --status-error-bg: 0 86% 97%;
+  --status-error-border: 0 94% 82%;
+  --status-info: 217 91% 60%;
+  --status-fixed: 174 80% 35%;
+}
+
+/* Leading identifiers are neutral, readable values—not orange action chrome. */
+.lightTheme :global([data-table-leading-column="true"] a) {
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Table rows communicate navigation through the row/link itself, never an arrow glyph. */
+.lightTheme :global([data-slot="table-cell"] svg.lucide-arrow-right) {
+  display: none;
+}

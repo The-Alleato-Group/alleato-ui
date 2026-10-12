@@ -1,6 +1,6 @@
 {
   "name": "@alleato/ui",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "private": true,
   "description": "Alleato design tokens and shadcn components, shared by every Alleato web app.",
   "license": "UNLICENSED",
@@ -45,7 +45,25 @@
     "./layout/workspace-gutter-context": "./src/layout/workspace-gutter-context.tsx",
     "./layout/table-page-layout-context": "./src/layout/table-page-layout-context.tsx",
     "./layout/page-tabs": "./src/layout/page-tabs.tsx",
-    "./layout/page-shell-frame": "./src/layout/page-shell-frame.tsx"
+    "./layout/page-shell-frame": "./src/layout/page-shell-frame.tsx",
+    "./tables/unified-table-page": "./src/tables/unified-table-page.tsx",
+    "./tables/table-toolbar": "./src/tables/table-toolbar.tsx",
+    "./tables/table-host": "./src/tables/table-host.tsx",
+    "./tables/table-filter-builder": "./src/tables/table-filter-builder.tsx",
+    "./tables/table-icon-button": "./src/tables/table-icon-button.tsx",
+    "./tables/table-settings-popover": "./src/tables/table-settings-popover.tsx",
+    "./tables/unified-table-csv": "./src/tables/unified-table-csv.ts",
+    "./tables/table-count-indicator": "./src/tables/table-count-indicator.tsx",
+    "./tables/inline-select-editor": "./src/tables/inline-select-editor.tsx",
+    "./tables/table-side-panel": "./src/tables/table-side-panel.tsx",
+    "./tables/table-horizontal-scrollbar": "./src/tables/table-horizontal-scrollbar.tsx",
+    "./tables/table-page-actions": "./src/tables/table-page-actions.tsx",
+    "./tables/column-order": "./src/tables/column-order.ts",
+    "./tables/column-resize": "./src/tables/column-resize.tsx",
+    "./tables/unified-table-csv-columns": "./src/tables/unified-table-csv-columns.ts",
+    "./layout/app-shell-split-view": "./src/layout/app-shell-split-view.tsx",
+    "./hooks/use-is-printing": "./src/hooks/use-is-printing.ts",
+    "./hooks/use-stored-preference": "./src/hooks/use-stored-preference.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -53,6 +71,10 @@
     "check": "pnpm typecheck && pnpm test"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -68,6 +90,7 @@
     "@radix-ui/react-toggle": "^1.1.10",
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@tanstack/react-virtual": "^3.13.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

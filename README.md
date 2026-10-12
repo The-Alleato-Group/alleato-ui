@@ -9,7 +9,7 @@ version bump.
 | --- | --- |
 | Alleato OS (`projects.alleatogroup.com`) | tokens + components |
 | Learning app (`training/`: `/training`, `/content`, `/knowledge`, `/docs`) | tokens + components |
-| ASRS estimator | tokens (components after it adopts Tailwind 4) |
+| ASRS estimator | standalone tokens and initial controls; the estimator in Alleato OS reuses its package-backed controls |
 
 ## Install
 
@@ -94,6 +94,43 @@ Optional peers, needed only for the component that uses them: `recharts`
 (chart), `react-hook-form` (form), `sonner` + `next-themes` (sonner),
 `next` (kpi, section-card links), `framer-motion` (animated empty state).
 
+## Share the full table across projects (v0.6.0 candidate)
+
+The candidate moves the canonical `UnifiedTablePage`, `TableToolbar`, filter
+builder, column ordering/resizing, inline editor, CSV helpers, scrollbar and
+panel presentation into `src/tables`. The split workspace, modal and panel
+primitives also have one package owner. Release and consumer adoption are still
+pending; the installation example above remains on the latest released tag.
+
+```tsx
+import { UnifiedTablePage } from "@alleato/ui/tables/unified-table-page";
+import { TableHostProvider } from "@alleato/ui/tables/table-host";
+import { applicationTableHost } from "./application-table-host";
+
+<TableHostProvider host={applicationTableHost}>
+  <UnifiedTablePage {...tableProps} />
+</TableHostProvider>
+```
+
+Create one stable, typed `TableHost` adapter per app. Supply the existing page
+header, route tabs, header actions, bulk-edit dialog, saved-view menu, panel
+preference controller, table preferences, storage, toast and failure reporter.
+The adapter retains identity, routing and persistence. Supply rows, columns and
+authorized callbacks through the normal table props. Other pages then reuse the
+same adapter. Missing `TableHostProvider` throws a specific integration error.
+
+The package owns sorting, filtering, selection presentation, inline editing,
+column controls, pagination, split view and mobile cards. It owns no app aliases
+or API endpoints. Apps continue to own queries, permissions and writes.
+
+For a standalone React consumer, see
+[`consumer.tsx`](docs/tasks/evidence/shared-tables/consumer.tsx). Build it with
+`node scripts/build-layout-example.mjs shared-tables`. The generated example
+includes both Tailwind styles and the table's compiled CSS module. Inspected
+desktop/phone captures and interaction results are in the
+[verification summary](docs/tasks/evidence/shared-tables/VERIFICATION_SUMMARY.md).
+Independent review and deployed consumer proof remain pending.
+
 ## Share page layouts across projects
 
 Page layout and phone-card presentation are available without Next.js route
@@ -150,9 +187,11 @@ package so every consumer observes the same layout ownership. A workspace that
 already supplies horizontal gutters wraps its children in
 `WorkspaceGutterProvider`; nested containers then stay flush at every breakpoint.
 
-Full `UnifiedTablePage` and document-upload APIs remain app-owned; see the
-[shared library plan](docs/tasks/tasks-shared-ui-library.md) for their extraction
-boundaries. These exports are web React components, not React Native controls.
+The v0.6.0 candidate shares `UnifiedTablePage` presentation through the host
+adapter described above. Document-upload APIs remain app-owned; see the
+[shared library plan](docs/tasks/tasks-shared-ui-library.md) for release and
+consumer acceptance. These exports are web React components, not React Native
+controls.
 
 A runnable standalone example, source and inspected desktop/phone screenshots are
 in [`docs/tasks/evidence/shared-layouts/`](docs/tasks/evidence/shared-layouts/VERIFICATION_SUMMARY.md).
