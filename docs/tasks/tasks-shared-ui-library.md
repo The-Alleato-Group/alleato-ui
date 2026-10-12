@@ -4,7 +4,7 @@ id_prefix: AUI
 status: in-progress
 project: Alleato OS
 created: 2026-09-29
-updated: 2026-10-11
+updated: 2026-10-12
 source: Megan, 2026-09-24 + 2026-09-29 — "consistent components across the main app and the docs ... a shared UI component library with shadcn"
 ---
 
@@ -84,8 +84,8 @@ layout contexts so consumers cannot accidentally create separate providers.
 - [x] AUI-063: Release the package and publish the exact consumer scope. **Files:** package version/readme, this plan, PM per-session evidence. **Done when:** immutable tag, source SHA/readback and applicable deployment receipt are recorded. Effort: S. Evidence: v0.5.1 source `81b638baa8a209ad13043c5a30635469150424a3`, green release CI; PM and Training both have Ready production receipts carried by `beb1848dd468b59d07969696beb45b4286d15f71` containing the merged consumer scope.
 - [x] AUI-064: Capture and inspect desktop/mobile proof on a canonical consumer route. **Files:** `docs/tasks/evidence/shared-layouts/`. **Done when:** the changed consumer version renders on the canonical route and the screenshots are viewable in the closeout. Effort: M. Evidence: authenticated canonical `/67/commitments` (43 rows) and `/content` (8 rows), inspected at 1440px and 390px. Private PM evidence: `tests/agent-browser-runs/2026-10-12-shared-ui-v051-live/`; source/release readback: PM `docs/ops/evidence/working-context/2026-10-12-0328-shared-ui-tables.md`.
 
-Gate: P6 remains open until source publication, consumer checks and deployed
-desktop/mobile proof are all recorded. A component render is package evidence,
+Gate: PASSED 2026-10-12 — source publication, consumer checks and deployed
+desktop/mobile proof are recorded above. A component render is package evidence,
 not proof of a deployed application.
 
 ## P7 — Remaining application presentation boundaries
@@ -100,7 +100,7 @@ regressions, independent diff review, immutable release, scoped consumer
 publication, deployment receipts and canonical desktop/mobile screenshots.
 
 - [ ] AUI-070: Separate UnifiedTablePage's portable table/toolbar/state presentation from app preferences, reporting and shell adapters. **Files:** PM `components/tables/unified/`, package table modules. Tracking: [PM #2926](https://github.com/The-Alleato-Group/project-management/issues/2926). **Done when:** existing table regressions pass with a cross-project consumer and no copied table configuration/JSX. Effort: L.
-- [ ] AUI-071: Finish the document picker boundary tracked in PM issue #2141. **Files:** package presentation and PM attachment adapter. **Done when:** APIs, upload/storage and permissions stay app-owned while presentation is shared and verified. Effort: L.
+- [x] AUI-071: Finish the document picker boundary tracked in PM issue #2141. **Files:** package presentation and PM attachment adapter. **Done when:** APIs, upload/storage and permissions stay app-owned while presentation is shared and verified. Effort: L. Evidence: v0.5.1 and merged consumer PR #2927 have Ready PM/Training receipts; package regressions cover callback delegation, category editing, pending/loading and unavailable-action omission without API/cache/entity-policy imports. Fresh independent reviewer `/root/table_candidate_final_review` PASS on 2026-10-12 inspected the deployed six-file desktop/390px view and action menu. Private production proof stays in PM `tests/agent-browser-runs/2026-10-12-shared-ui-v051-live/`. The separate project-shell 404 is tracked in PM #780; no upload, storage or permission behavior was changed.
 
 Gate: do not claim all application components are portable while these boundaries
 or ASRS AUI-052 remain open.
@@ -115,6 +115,10 @@ or ASRS AUI-052 remain open.
 - 2026-09-29 — A package, not a shadcn copy-paste registry: copying files into each app is how `training/` drifted.
 
 ## Log
+
+- 2026-10-12 — Third fresh P7 reviewer `/root/table_candidate_final_review` returns PASS for source `0796a66aee29797a182cf61d45cb113b31792844` with actual installed PM 217 checks, Training 117 checks and TypeScript, package TypeScript/189 tests, manifest/lock consistency and an independent semantic comparison of both original table contracts. The reviewer inspected standalone candidate screenshots and explicitly leaves deployed v0.6.0 proof open. Separately AUI-071 passes on v0.5.1 production six-file desktop/mobile/action proof plus callback/ownership regressions; the project shell error remains independently tracked. P7 release and final consumer adoption proceed from this passed gate.
+
+- 2026-10-12 — Repaired candidate source `0796a66aee29797a182cf61d45cb113b31792844` and consumer `692cac7465309a5c503eab8a5e9d5db52255215e` are published. Actual installed Training TypeScript passes, as do 117 Training ownership/adapter checks, 175 focused PM checks and package TypeScript/189 tests. Training CI, changed-quality, guardrails and library CI pass; the consumer full-suite job remains running. A third different fresh-context reviewer is auditing the candidate before release. Canonical document presentation now has inspected private desktop/390px proof of six existing files and an action menu; its project shell returns a separate 404, so the route is not claimed error-free. Existing canonical PM ASRS workbook screenshots establish current shared-control reuse without fulfilling the historical standalone P30 migration. No production records were modified.
 
 - 2026-10-10 — Resumed shared component extraction. Owned package files are the P6 exports, focused tests, README/version and this plan. Owned consumer files are the exact P6 app adapters, metadata, lockfiles and shared-package guardrails; unrelated primary-checkout files are preserved.
 

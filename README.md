@@ -9,7 +9,7 @@ version bump.
 | --- | --- |
 | Alleato OS (`projects.alleatogroup.com`) | tokens + components |
 | Learning app (`training/`: `/training`, `/content`, `/knowledge`, `/docs`) | tokens + components |
-| ASRS estimator | tokens (components after it adopts Tailwind 4) |
+| ASRS estimator | standalone tokens and initial controls; the estimator in Alleato OS reuses its package-backed controls |
 
 ## Install
 
@@ -187,9 +187,11 @@ package so every consumer observes the same layout ownership. A workspace that
 already supplies horizontal gutters wraps its children in
 `WorkspaceGutterProvider`; nested containers then stay flush at every breakpoint.
 
-Full `UnifiedTablePage` and document-upload APIs remain app-owned; see the
-[shared library plan](docs/tasks/tasks-shared-ui-library.md) for their extraction
-boundaries. These exports are web React components, not React Native controls.
+The v0.6.0 candidate shares `UnifiedTablePage` presentation through the host
+adapter described above. Document-upload APIs remain app-owned; see the
+[shared library plan](docs/tasks/tasks-shared-ui-library.md) for release and
+consumer acceptance. These exports are web React components, not React Native
+controls.
 
 A runnable standalone example, source and inspected desktop/phone screenshots are
 in [`docs/tasks/evidence/shared-layouts/`](docs/tasks/evidence/shared-layouts/VERIFICATION_SUMMARY.md).

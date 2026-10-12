@@ -44,3 +44,15 @@ passed at extraction commit `125a585a08a52c883a8b7d669f93cc177090cf12`.
 This is package portability evidence. Independent review, immutable v0.6.0
 release and deployed consumer proof remain required. v0.5.1 live app captures
 prove only the previously released layout and document adoption.
+
+## Repaired candidate gate — 2026-10-12
+
+Fresh reviewer `/root/table_candidate_final_review` returns PASS for release
+readiness at `0796a66aee29797a182cf61d45cb113b31792844`, consumed by PM PR #2956
+head `692cac7465309a5c503eab8a5e9d5db52255215e`. It independently ran package
+TypeScript and 189 tests, installed Training TypeScript and 117 focused tests,
+and 217 PM focused tests. It compared both apps' original contracts and checked
+actual manifest/lock installation consistency. Training retains view labels,
+domain delete copy, allowed visible-row batch deletion and its string-only
+bulk editor through a typed host adapter. The same standalone screenshots
+were inspected; release and canonical deployed v0.6.0 proof remain open.
