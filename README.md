@@ -9,7 +9,7 @@ version bump.
 | --- | --- |
 | Alleato OS (`projects.alleatogroup.com`) | tokens + components |
 | Learning app (`training/`: `/training`, `/content`, `/knowledge`, `/docs`) | tokens + components |
-| ASRS estimator | standalone tokens and initial controls; the estimator in Alleato OS reuses its package-backed controls |
+| ASRS estimator | canonical main-app `/asrs` feature uses package-backed controls; standalone is preserved under its separate cutover owner |
 
 ## Install
 

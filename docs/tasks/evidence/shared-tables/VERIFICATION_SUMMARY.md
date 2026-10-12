@@ -90,3 +90,9 @@ separately reviewed and merged in PR2968 at
 `4ac4d304157606969a29a55f26412bc8bedb4715`. Its publication does not change
 package runtime bytes or the table already rendered by these production builds.
 This proof does not establish the standalone ASRS migration.
+
+## Separate Training compatibility-owner repair
+
+Merged PR2968 at `4ac4d304157606969a29a55f26412bc8bedb4715` replaces the unused local mobile-card compatibility owner with a package re-export and adds an exact-owner/path-existence guard. Its required checks and prior independent source review pass. The subsequent Training production receipt is `dpl_6WbYgHv6zqPb6PhDaSynUn9FtMQA`, Ready/Promoted with canonical alias `alleato-training-seven.vercel.app`. Normal workflow38214070110 succeeds: native event `workflow_dispatch`, `FORCE_DEPLOY=false`, controller mode `scheduled`, dispatch origin unproven. PM correctly reports NOOP and retains the previously accepted3bc receipt.
+
+Canonical `/content` was reloaded after Ready; actual script URLs carry the new Training deployment ID. Separate private proof is in PM `tests/agent-browser-runs/2026-10-12-shared-ui-v061-live/training-owner-repair/`: native1440x900 desktop,390x844 phone and actual host bulk-edit dialog. Selection works; Apply remains disabled, no fields or persisted records changed, Cancel restores the page and selection is cleared. Independent `/root/evidence_provenance_review` returns PASS after inspecting source, checks, provider/alias/source receipt and all three image formats/dimensions/hashes. The images are byte-identical to the earlier accepted captures, consistent with an owner-only repair. The separate sanitized receipt preserves the historical3bc record. AUI-062 is closed on this evidence.
