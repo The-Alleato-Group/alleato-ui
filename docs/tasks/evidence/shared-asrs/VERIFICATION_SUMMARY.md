@@ -73,8 +73,16 @@ existing null/legacy Draft fallback. Fresh independent `/root/asrs_library_relea
 package release boundary after inspecting the repair and running the six status
 regressions. The earlier full-adoption review correctly failed the intentionally
 old consumer pin and uncovered a Jest-discovery gap; the consumer test is now
-named `.unit.test.tsx`, matching normal discovery. Immutable v0.6.2, consumer
-pins/publication and post-repair Ready/deployed proof remain open.
+named `.unit.test.tsx`, matching normal discovery. Immutable v0.6.2 now passes
+CI38224809562 and release38225654179; tag object
+`521768c9c6cbafe769313bd1ba74e6328a689fd5` dereferences to reviewed source
+`0d1185ad2a20bd38df7799837e8f5ea9339fcdfd`. Both installed consumers and
+exact immutable manifest/lock pairs pass a different fresh consumer review
+(`/root/asrs_v062_consumer_review`): 131 PM and116 Training assertions, changed-file
+ESLint, preserved schema fallback/callbacks and no unrelated dependency/patch changes.
+[PM PR2972](https://github.com/The-Alleato-Group/project-management/pull/2972)
+contains the eight-file scope at `ced019743e611f98b43af8d86980da47af7e5b7a`.
+Merge and post-repair Ready/deployed proof remain open.
 
 **AUI-030 and AUI-052 remain open.** Baseline renders and source imports do not
 close the repaired-owner deployment gate.
