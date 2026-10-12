@@ -10,6 +10,7 @@ import {
   within,
 } from "@testing-library/react";
 import { TooltipProvider } from "../src/components/tooltip";
+import { ViewSwitcher } from "../src/tables/table-toolbar";
 import { PageTabs } from "../src/layout/page-tabs";
 import { TableHostProvider, type TableHost } from "../src/tables/table-host";
 import {
@@ -388,6 +389,59 @@ describe("portable unified table", () => {
       expect(source).not.toMatch(/from\s+["']@\//);
       expect(source).not.toMatch(/(?:fetch|apiFetch)\s*\(|["']\/api\//);
     }
+  });
+
+  it.each([undefined, ["name", "status"]])("owns one select-all beside the split title (%s)", splitColumns => {
+    const value = props();
+    value.toolbar.currentView = "split";
+    value.table.splitColumns = splitColumns;
+    const selectAll = vi.fn();
+    value.selection = { selectedIds: [], onSelectAll: selectAll, onSelectRow: vi.fn() };
+    mount(value);
+    const checkbox = screen.getByRole("checkbox", { name: "Select all rows" });
+    expect(screen.getByRole("heading", { name: "Records", level: 2 }).parentElement?.contains(checkbox)).toBe(true);
+    expect(document.querySelector("table thead [role=checkbox]")).toBeNull();
+    fireEvent.click(checkbox);
+    expect(selectAll).toHaveBeenCalledWith(true, ["b", "a"]);
+  });
+});
+
+
+describe("mobile view disclosure", () => {
+  it("shows only enabled views in the menu and preserves the host callback", async () => {
+    const change = vi.fn();
+    render(<ViewSwitcher currentView="split" enabledViews={["table", "split", "board"]} onViewChange={change} />);
+    fireEvent.keyDown(screen.getByRole("button", {name:"Change view, Split"}), {key:"Enter"});
+    const board = await screen.findByRole("menuitemradio", {name:"Board"});
+    expect(screen.queryByRole("menuitemradio", {name:"Gallery"})).toBeNull();
+    expect(screen.getByRole("menuitemradio", {name:"Split"}).getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(board);
+    expect(change).toHaveBeenCalledWith("board");
+  });
+
+  it("shows labeled layout choices directly with touch-sized targets", () => {
+    const change = vi.fn();
+    render(
+      <ViewSwitcher
+        currentView="split"
+        display="labels"
+        enabledViews={["table", "split", "board"]}
+        onViewChange={change}
+      />,
+    );
+
+    const group = screen.getByRole("radiogroup", { name: "Table views" });
+    const selected = within(group).getByRole("radio", { name: "Split view" });
+    const board = within(group).getByRole("radio", { name: "Board view" });
+    expect(selected.getAttribute("aria-checked")).toBe("true");
+    expect(board.textContent).toContain("Board");
+    expect(board.classList.contains("h-11")).toBe(true);
+    expect(board.classList.contains("w-full")).toBe(true);
+    expect(screen.queryByRole("menu")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Change view, Split" })).toBeNull();
+
+    fireEvent.click(board);
+    expect(change).toHaveBeenCalledWith("board");
   });
 });
 

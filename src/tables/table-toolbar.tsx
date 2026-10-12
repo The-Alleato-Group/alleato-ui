@@ -84,6 +84,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/dropdown-menu";
@@ -325,12 +327,13 @@ export function ViewSwitcher({
   currentView,
   onViewChange,
   enabledViews = ["table", "split", "board", "card"],
+  display = "icons",
 }: {
   currentView: ViewMode;
   onViewChange: (view: ViewMode) => void;
   enabledViews?: ViewMode[];
-  /** @deprecated The shared switcher is always icon-only. */
-  display?: "default" | "icons";
+  /** Use labeled choices in a layout settings panel; toolbars stay compact. */
+  display?: "default" | "icons" | "labels";
 }): ReactElement {
   const viewButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const views: { mode: ViewMode; icon: ReactNode; label: string }[] = [
@@ -409,14 +412,72 @@ export function ViewSwitcher({
     selectViewAt(nextIndex);
   };
 
+  if (display === "labels") {
+    return (
+      <div
+        role="radiogroup"
+        aria-label="Table views"
+        className="flex w-full flex-col gap-1"
+      >
+        {filteredViews.map((view, index) => (
+          <Button
+            key={view.mode}
+            ref={(node) => {
+              viewButtonRefs.current[index] = node;
+            }}
+            type="button"
+            variant={currentView === view.mode ? "secondary" : "ghost"}
+            role="radio"
+            aria-label={`${view.label} view`}
+            aria-checked={currentView === view.mode}
+            tabIndex={
+              selectedIndex >= 0
+                ? selectedIndex === index
+                  ? 0
+                  : -1
+                : index === 0
+                  ? 0
+                  : -1
+            }
+            onClick={() => onViewChange(view.mode)}
+            onKeyDown={(event) => handleViewKeyDown(event, index)}
+            className="h-11 w-full justify-start gap-3 px-3"
+          >
+            {view.icon}
+            <span>{view.label}</span>
+          </Button>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider>
+      <div className="sm:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <TableIconButton size="icon" className="size-11" aria-label={`Change view, ${filteredViews[selectedIndex]?.label ?? "Table"}`}>
+              {filteredViews[selectedIndex]?.icon ?? filteredViews[0]?.icon}
+            </TableIconButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>View</DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={currentView} onValueChange={value => onViewChange(value as ViewMode)}>
+              {filteredViews.map(view => (
+                <DropdownMenuRadioItem key={view.mode} value={view.mode} className="min-h-11 gap-2">
+                  {view.icon}{view.label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <div
         role="radiogroup"
         aria-label="Table views"
         className={cn(
           tabsListVariants({ variant: "default" }),
-          "h-11 shrink-0 justify-start gap-0.5 sm:h-8",
+          "hidden h-8 shrink-0 justify-start gap-0.5 sm:flex",
         )}
       >
         {filteredViews.map((view, index) => (
@@ -2226,6 +2287,7 @@ export function TableToolbar({
                 <SidePanelBody>
                   <ViewSwitcher
                     currentView={currentView}
+                    display="labels"
                     onViewChange={(view) => {
                       onViewChange(view);
                       setMobileLayoutOpen(false);
@@ -2614,6 +2676,7 @@ export function TableToolbar({
                       currentView={currentView}
                       onViewChange={onViewChange}
                       enabledViews={enabledViews}
+                      display="labels"
                     />
                   </div>
                 ) : null}

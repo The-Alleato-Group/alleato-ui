@@ -11,6 +11,7 @@ import {
 import { Plus } from "lucide-react";
 
 import { Button } from "./button";
+import { SelectionCheckbox } from "../ds/selection-checkbox";
 import { getPageTabTriggerClassName } from "../layout/page-tabs";
 import {
   APP_SHELL_SPLIT_VIEW_CLASSNAME,
@@ -89,7 +90,7 @@ export const SplitPageWorkspaceRailAddAction = React.forwardRef<
     aria-label={label}
     title={label}
     className={cn(
-      "h-8 w-8 rounded-full text-primary shadow-none hover:text-primary",
+      "size-11 rounded-full text-primary shadow-none hover:text-primary sm:size-8",
       className,
     )}
     {...props}
@@ -103,6 +104,8 @@ SplitPageWorkspaceRailAddAction.displayName = "SplitPageWorkspaceRailAddAction";
 type SplitPageWorkspaceRailHeaderProps = {
   /** The concise name of the list or inspector currently in view. */
   title: React.ReactNode;
+  /** Select visible records beside the title; the header owns disclosure. */
+  selection?: React.ComponentProps<typeof SelectionCheckbox>;
   /** Secondary context, such as the current project or visible item count. */
   description?: React.ReactNode;
   /** Compact, reusable controls such as search, filters, or pane controls. */
@@ -123,6 +126,7 @@ type SplitPageWorkspaceRailHeaderProps = {
  */
 export function SplitPageWorkspaceRailHeader({
   title,
+  selection,
   description,
   actions,
   leading,
@@ -134,17 +138,30 @@ export function SplitPageWorkspaceRailHeader({
     <header
       className={cn("shrink-0 border-b border-border/70 px-5 py-4", className)}
     >
-      <div className="flex min-w-0 flex-wrap items-start gap-3 sm:flex-nowrap">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-3 sm:flex-nowrap">
         {leading ? <div className="shrink-0">{leading}</div> : null}
-        <div className="min-w-0 flex-1 basis-full sm:basis-auto">
-          <h2
-            className={cn(
-              "truncate text-lg font-semibold tracking-[-0.01em] text-foreground",
-              titleClassName,
-            )}
-          >
-            {title}
-          </h2>
+        <div className="min-w-0 flex-1">
+          <div className="group/title flex min-w-0 items-center gap-1">
+            {selection ? (
+              <label
+                className={cn(
+                  "-my-2 -ml-3 flex size-11 shrink-0 cursor-pointer items-center justify-center transition-opacity motion-reduce:transition-none",
+                  "focus-within:pointer-events-auto focus-within:opacity-100 group-hover/title:pointer-events-auto group-hover/title:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100",
+                  selection.checked === false ? "pointer-events-none opacity-0" : "opacity-100",
+                )}
+              >
+                <SelectionCheckbox {...selection} />
+              </label>
+            ) : null}
+            <h2
+              className={cn(
+                "min-w-0 truncate text-lg font-semibold tracking-[-0.01em] text-foreground",
+                titleClassName,
+              )}
+            >
+              {title}
+            </h2>
+          </div>
           {description ? (
             <p className="mt-1 truncate text-sm text-muted-foreground">
               {description}
@@ -152,13 +169,55 @@ export function SplitPageWorkspaceRailHeader({
           ) : null}
         </div>
         {actions ? (
-          <div className="ml-auto flex shrink-0 items-center gap-1 text-muted-foreground">
+          <div className="ml-auto flex max-w-full shrink-0 flex-wrap items-center gap-1 text-muted-foreground">
             {actions}
           </div>
         ) : null}
       </div>
       {children}
     </header>
+  );
+}
+
+/** A readable rail row: primary context gets its own line on phones. */
+export function SplitPageWorkspaceRowContent({
+  title,
+  trailing,
+  metadata = [],
+  muted = false,
+}: {
+  title: React.ReactNode;
+  trailing?: React.ReactNode;
+  metadata?: ReadonlyArray<{ key: string; label: string; primary?: boolean; desktopOnly?: boolean }>;
+  muted?: boolean;
+}) {
+  return (
+    <span className="flex w-full min-w-0 flex-col gap-1">
+      <span className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
+        <span className={cn("min-w-0 line-clamp-3 text-base font-medium leading-6 text-foreground sm:line-clamp-2 sm:text-sm sm:leading-5", muted && "text-muted-foreground line-through")}>
+          {title}
+        </span>
+        {trailing}
+      </span>
+      <span className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-sm leading-5 text-muted-foreground sm:text-xs sm:leading-4">
+        {metadata.map(item => (
+          <span key={item.key} title={item.label} className={cn(
+            "min-w-0 truncate",
+            item.primary && "order-first basis-full sm:order-none sm:basis-auto",
+            item.desktopOnly && "hidden sm:inline",
+          )}>{item.label}</span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+/** Row selection has a full touch target and never activates the record. */
+export function SplitPageWorkspaceRowSelection(props: React.ComponentProps<typeof SelectionCheckbox>) {
+  return (
+    <label className="flex min-h-11 w-11 shrink-0 cursor-pointer items-center justify-center self-center">
+      <SelectionCheckbox {...props} />
+    </label>
   );
 }
 

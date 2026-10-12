@@ -4484,6 +4484,12 @@ export function UnifiedTablePage<T>({
       }
       description={isCompactDensity ? undefined : header.description}
       actions={headerActionsSlot}
+      selection={hasRowSelection ? {
+        checked: allSelected ? true : someSelected ? "indeterminate" : false,
+        onCheckedChange: handleSelectAll,
+        disabled: rowOrderedItems.length === 0,
+        "aria-label": "Select all rows",
+      } : undefined}
     >
       {tabs || !shouldPortalToolbar ? (
         <div className="mt-3 flex min-w-0 flex-col gap-2">
@@ -4779,7 +4785,7 @@ export function UnifiedTablePage<T>({
                         }}
                       >
                         <div className="flex items-center justify-center">
-                          <Checkbox
+                          {!usesGenericSplitWorkspace && <Checkbox
                             checked={
                               allSelected
                                 ? true
@@ -4791,7 +4797,7 @@ export function UnifiedTablePage<T>({
                               handleSelectAll(Boolean(checked))
                             }
                             aria-label="Select all rows"
-                          />
+                          />}
                         </div>
                       </TableHead>
                     )}
@@ -5844,7 +5850,7 @@ export function UnifiedTablePage<T>({
                           }}
                         >
                           <div className="flex items-center justify-center">
-                            <Checkbox
+                            {!usesGenericSplitWorkspace && <Checkbox
                               checked={
                                 allSelected
                                   ? true
@@ -5856,7 +5862,7 @@ export function UnifiedTablePage<T>({
                                 handleSelectAll(Boolean(checked))
                               }
                               aria-label="Select all rows"
-                            />
+                            />}
                           </div>
                         </TableHead>
                       )}

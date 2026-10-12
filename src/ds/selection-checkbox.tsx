@@ -3,7 +3,8 @@
 import { Checkbox } from "../components/checkbox";
 
 interface SelectionCheckboxProps {
-  checked: boolean;
+  checked: boolean | "indeterminate";
+  disabled?: boolean;
   onCheckedChange: (checked: boolean) => void;
   /** Accessible name — a selection checkbox carries no visible label of its own. */
   "aria-label": string;
