@@ -32,7 +32,7 @@ export const TableIconButton = React.forwardRef<
       ref={ref}
       variant="ghost"
       size={size}
-      className={cn(tableIconButtonClassName, className)}
+      className={cn(tableIconButtonClassName, "min-h-11 min-w-11 sm:min-h-0 sm:min-w-0", className)}
       {...props}
     />
   );

@@ -84,6 +84,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/dropdown-menu";
@@ -411,12 +413,31 @@ export function ViewSwitcher({
 
   return (
     <TooltipProvider>
+      <div className="sm:hidden">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <TableIconButton size="icon" className="size-11" aria-label={`Change view, ${filteredViews[selectedIndex]?.label ?? "Table"}`}>
+              {filteredViews[selectedIndex]?.icon ?? filteredViews[0]?.icon}
+            </TableIconButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>View</DropdownMenuLabel>
+            <DropdownMenuRadioGroup value={currentView} onValueChange={value => onViewChange(value as ViewMode)}>
+              {filteredViews.map(view => (
+                <DropdownMenuRadioItem key={view.mode} value={view.mode} className="min-h-11 gap-2">
+                  {view.icon}{view.label}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <div
         role="radiogroup"
         aria-label="Table views"
         className={cn(
           tabsListVariants({ variant: "default" }),
-          "h-11 shrink-0 justify-start gap-0.5 sm:h-8",
+          "hidden h-8 shrink-0 justify-start gap-0.5 sm:flex",
         )}
       >
         {filteredViews.map((view, index) => (

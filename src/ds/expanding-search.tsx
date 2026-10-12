@@ -105,7 +105,7 @@ export function ExpandingSearch({
               size="icon"
               onClick={expand}
               aria-label={ariaLabel}
-              className={cn("h-8 w-8 text-muted-foreground", triggerClassName, className)}
+              className={cn("size-11 text-muted-foreground sm:size-8", triggerClassName, className)}
             >
               <Search className="h-4 w-4" />
             </Button>

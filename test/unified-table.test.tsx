@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { TooltipProvider } from "../src/components/tooltip";
+import { ViewSwitcher } from "../src/tables/table-toolbar";
 import { PageTabs } from "../src/layout/page-tabs";
 import { TableHostProvider, type TableHost } from "../src/tables/table-host";
 import { UnifiedTablePage, type UnifiedTablePageProps, type TableColumn } from "../src/tables/unified-table-page";
@@ -151,5 +152,19 @@ describe("portable unified table", () => {
     expect(document.querySelector("table thead [role=checkbox]")).toBeNull();
     fireEvent.click(checkbox);
     expect(selectAll).toHaveBeenCalledWith(true, ["b", "a"]);
+  });
+});
+
+
+describe("mobile view disclosure", () => {
+  it("shows only enabled views in the menu and preserves the host callback", async () => {
+    const change = vi.fn();
+    render(<ViewSwitcher currentView="split" enabledViews={["table", "split", "board"]} onViewChange={change} />);
+    fireEvent.keyDown(screen.getByRole("button", {name:"Change view, Split"}), {key:"Enter"});
+    const board = await screen.findByRole("menuitemradio", {name:"Board"});
+    expect(screen.queryByRole("menuitemradio", {name:"Gallery"})).toBeNull();
+    expect(screen.getByRole("menuitemradio", {name:"Split"}).getAttribute("aria-checked")).toBe("true");
+    fireEvent.click(board);
+    expect(change).toHaveBeenCalledWith("board");
   });
 });

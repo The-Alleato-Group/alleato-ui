@@ -1,7 +1,7 @@
 import * as React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { SplitPageWorkspaceRailHeader } from "../src/components/split-page-workspace";
+import { SplitPageWorkspaceRailHeader, SplitPageWorkspaceRowContent, SplitPageWorkspaceRowSelection } from "../src/components/split-page-workspace";
 
 afterEach(cleanup);
 
@@ -40,5 +40,23 @@ describe("workspace title selection", () => {
     expect(classes).toContain("group-hover/title:opacity-100");
     expect(classes).toContain("[@media(hover:none)]:opacity-100");
     expect(classes).toContain("size-11");
+  });
+});
+
+
+describe("mobile rail hierarchy", () => {
+  it("keeps long primary context readable and row selection independent", () => {
+    const activate = vi.fn();
+    const select = vi.fn();
+    render(<div><SplitPageWorkspaceRowSelection checked={false} onCheckedChange={select} aria-label="Select task" />
+      <button onClick={activate}><SplitPageWorkspaceRowContent title="Review the revised training room scope and confirm the remaining estimates"
+        metadata={[{key:"project",label:"Radial Brownsburg training room",primary:true},{key:"owner",label:"Andrew Cannon"},{key:"source",label:"Daily Deep Read",desktopOnly:true}]} /></button></div>);
+    fireEvent.click(screen.getByRole("checkbox",{name:"Select task"}));
+    expect(select).toHaveBeenCalledWith(true);
+    expect(activate).not.toHaveBeenCalled();
+    expect(screen.getByText("Radial Brownsburg training room").className).toContain("basis-full");
+    expect(screen.getByText("Daily Deep Read").className).toContain("hidden sm:inline");
+    fireEvent.click(screen.getByRole("button",{name:/Review the revised/}));
+    expect(activate).toHaveBeenCalledOnce();
   });
 });
