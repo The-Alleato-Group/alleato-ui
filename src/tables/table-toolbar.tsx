@@ -327,12 +327,13 @@ export function ViewSwitcher({
   currentView,
   onViewChange,
   enabledViews = ["table", "split", "board", "card"],
+  display = "icons",
 }: {
   currentView: ViewMode;
   onViewChange: (view: ViewMode) => void;
   enabledViews?: ViewMode[];
-  /** @deprecated The shared switcher is always icon-only. */
-  display?: "default" | "icons";
+  /** Use labeled choices in a layout settings panel; toolbars stay compact. */
+  display?: "default" | "icons" | "labels";
 }): ReactElement {
   const viewButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const views: { mode: ViewMode; icon: ReactNode; label: string }[] = [
@@ -410,6 +411,45 @@ export function ViewSwitcher({
     event.preventDefault();
     selectViewAt(nextIndex);
   };
+
+  if (display === "labels") {
+    return (
+      <div
+        role="radiogroup"
+        aria-label="Table views"
+        className="flex w-full flex-col gap-1"
+      >
+        {filteredViews.map((view, index) => (
+          <Button
+            key={view.mode}
+            ref={(node) => {
+              viewButtonRefs.current[index] = node;
+            }}
+            type="button"
+            variant={currentView === view.mode ? "secondary" : "ghost"}
+            role="radio"
+            aria-label={`${view.label} view`}
+            aria-checked={currentView === view.mode}
+            tabIndex={
+              selectedIndex >= 0
+                ? selectedIndex === index
+                  ? 0
+                  : -1
+                : index === 0
+                  ? 0
+                  : -1
+            }
+            onClick={() => onViewChange(view.mode)}
+            onKeyDown={(event) => handleViewKeyDown(event, index)}
+            className="h-11 w-full justify-start gap-3 px-3"
+          >
+            {view.icon}
+            <span>{view.label}</span>
+          </Button>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider>
@@ -2247,6 +2287,7 @@ export function TableToolbar({
                 <SidePanelBody>
                   <ViewSwitcher
                     currentView={currentView}
+                    display="labels"
                     onViewChange={(view) => {
                       onViewChange(view);
                       setMobileLayoutOpen(false);
@@ -2635,6 +2676,7 @@ export function TableToolbar({
                       currentView={currentView}
                       onViewChange={onViewChange}
                       enabledViews={enabledViews}
+                      display="labels"
                     />
                   </div>
                 ) : null}

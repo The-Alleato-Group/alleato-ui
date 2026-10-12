@@ -324,6 +324,31 @@ describe("mobile view disclosure", () => {
     fireEvent.click(board);
     expect(change).toHaveBeenCalledWith("board");
   });
+
+  it("shows labeled layout choices directly with touch-sized targets", () => {
+    const change = vi.fn();
+    render(
+      <ViewSwitcher
+        currentView="split"
+        display="labels"
+        enabledViews={["table", "split", "board"]}
+        onViewChange={change}
+      />,
+    );
+
+    const group = screen.getByRole("radiogroup", { name: "Table views" });
+    const selected = within(group).getByRole("radio", { name: "Split view" });
+    const board = within(group).getByRole("radio", { name: "Board view" });
+    expect(selected.getAttribute("aria-checked")).toBe("true");
+    expect(board.textContent).toContain("Board");
+    expect(board.classList.contains("h-11")).toBe(true);
+    expect(board.classList.contains("w-full")).toBe(true);
+    expect(screen.queryByRole("menu")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Change view, Split" })).toBeNull();
+
+    fireEvent.click(board);
+    expect(change).toHaveBeenCalledWith("board");
+  });
 });
 
 describe("draft price table behavior", () => {
