@@ -126,8 +126,10 @@ or API endpoints. Apps continue to own queries, permissions and writes.
 For a standalone React consumer, see
 [`consumer.tsx`](docs/tasks/evidence/shared-tables/consumer.tsx). Build it with
 `node scripts/build-layout-example.mjs shared-tables`. The generated example
-includes both Tailwind styles and the table's compiled CSS module. Browser proof
-for this candidate is still pending.
+includes both Tailwind styles and the table's compiled CSS module. Inspected
+desktop/phone captures and interaction results are in the
+[verification summary](docs/tasks/evidence/shared-tables/VERIFICATION_SUMMARY.md).
+Independent review and deployed consumer proof remain pending.
 
 ## Share page layouts across projects
 

@@ -20,7 +20,7 @@ const preferenceKey = "shared-table-example:preferences";
 // A real app supplies its existing services, as PM and Training do.
 const host: TableHost = {
   PageHeader: ({ title, titleContent, actions, description }) => <>
-    <Heading level={2} as="h1">{titleContent ?? title}</Heading>
+    {titleContent ?? <Heading level={2} as="h1">{title}</Heading>}
     {description && <Text tone="muted">{description}</Text>}
     {actions}
   </>,
