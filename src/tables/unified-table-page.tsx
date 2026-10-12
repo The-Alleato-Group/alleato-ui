@@ -2622,7 +2622,11 @@ export function UnifiedTablePage<T>({
   const [internalFilterQuery, setInternalFilterQuery] =
     React.useState<FilterQuery>(EMPTY_FILTER_QUERY);
   const pageOwnsFilterQuery = Boolean(toolbar.onFilterQueryChange);
-  const canFilterRulesLocally = Boolean(shouldClientPaginate);
+  // Grouping disables page slicing, not local knowledge of the full dataset.
+  // Keep that capability independent so grouped client-side tables can add rules.
+  const canFilterRulesLocally = Boolean(
+    pagination?.clientSide || (!pagination && resolvedFeatures.enablePagination),
+  );
   const ruleFilteringEnabled = pageOwnsFilterQuery || canFilterRulesLocally;
   const activeFilterQuery = pageOwnsFilterQuery
     ? (toolbar.filterQuery ?? EMPTY_FILTER_QUERY)

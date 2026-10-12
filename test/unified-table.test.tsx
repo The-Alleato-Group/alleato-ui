@@ -185,6 +185,26 @@ describe("portable unified table", () => {
     fireEvent.click(screen.getByRole("checkbox", { name: "Select all rows" }));
     expect(selectAll).toHaveBeenCalledWith(true, ["a"]);
   });
+  it.each([true, false])("keeps grouped rule-filter capability aligned with clientSide=%s in the real toolbar", async (clientSide) => {
+    const value = props();
+    value.table.grouping = { getGroupValue: row => row.status, getGroupLabel: value => value, labelColumnId: "name" };
+    value.pagination = { page: 1, totalPages: 1, perPage: 25, clientSide, onPageChange: vi.fn(), onPerPageChange: vi.fn() };
+    value.toolbar.filters = [{ id: "status", label: "Status", type: "select", options: [{ value: "Approved", label: "Approved" }, { value: "Draft", label: "Draft" }] }];
+    value.toolbar.filterQuery = { conjunction: "and", rules: [] };
+    value.toolbar.onFilterQueryChange = vi.fn();
+    mount(value);
+    fireEvent.click(screen.getByRole("button", { name: "View settings", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Filter", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "Add filter rule" }));
+    if (!clientSide) {
+      expect(screen.queryByRole("option", { name: "Status", exact: true })).toBeNull();
+      expect(value.toolbar.onFilterQueryChange).not.toHaveBeenCalled();
+      return;
+    }
+    expect(screen.getByRole("option", { name: "Status", exact: true })).toBeTruthy();
+    fireEvent.click(screen.getByRole("option", { name: "Status", exact: true }));
+    expect(value.toolbar.onFilterQueryChange).toHaveBeenCalledWith({ conjunction: "and", rules: [{ field: "status", operator: "is", values: [] }] });
+  });
   it("isolates selection from row activation and respects row permissions", () => {
     const value = props(); const activate = vi.fn(); const select = vi.fn();
     value.table.onRowClick = activate;
