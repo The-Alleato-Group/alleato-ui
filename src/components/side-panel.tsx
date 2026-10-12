@@ -230,9 +230,18 @@ function SidePanelContent({
       aria-describedby={ariaDescribedBy}
       {...props}
     >
+      {/* The inner column provides fallback scrolling for panels without a
+          SidePanelBody. With a body, that bounded region owns scrolling while
+          the header, footer, and absolute close button remain in view. */}
+      <div className="flex h-full min-h-0 flex-col overflow-y-auto">
+        {children}
+      </div>
       {canResize ? (
         // Below `sm` every rung is already the full viewport width, so there
-        // is nothing to drag against.
+        // is nothing to drag against. It comes AFTER the content on purpose:
+        // the dialog focuses its first tabbable element on open, and a handle
+        // placed first took that focus (drawing its focus line and skipping
+        // the first field). It is absolutely positioned, so order is free.
         <div
           role="separator"
           aria-orientation="vertical"
@@ -255,12 +264,6 @@ function SidePanelContent({
           />
         </div>
       ) : null}
-      {/* The inner column provides fallback scrolling for panels without a
-          SidePanelBody. With a body, that bounded region owns scrolling while
-          the header, footer, and absolute close button remain in view. */}
-      <div className="flex h-full min-h-0 flex-col overflow-y-auto">
-        {children}
-      </div>
     </SheetContent>
   );
 }

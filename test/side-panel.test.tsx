@@ -110,6 +110,23 @@ describe("SidePanelContent width", () => {
     expect(panelWidth()).toBe("min(100vw, 44rem)");
   });
 
+  it("opens with focus on the panel content, not on the resize handle", async () => {
+    render(
+      <SidePanel open>
+        <SidePanelContent size="md">
+          <SidePanelHeader>
+            <SidePanelTitle>Edit Project</SidePanelTitle>
+          </SidePanelHeader>
+          <SidePanelBody>
+            <input aria-label="Project Name" />
+          </SidePanelBody>
+        </SidePanelContent>
+      </SidePanel>,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(document.activeElement).toBe(screen.getByLabelText("Project Name"));
+  });
+
   it("has no handle when the host opts out or the panel is full width", () => {
     render(<Panel size="md" resizable={false} />);
     expect(screen.queryByRole("separator")).toBeNull();
