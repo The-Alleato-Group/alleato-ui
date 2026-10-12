@@ -6,6 +6,8 @@ import { Dialog as DialogPrimitive } from "radix-ui";
 
 import { cn } from "../lib/utils";
 import { Button } from "./button";
+import { SheetContent } from "./sheet";
+import { useIsMobile } from "../hooks/use-mobile";
 import {
   dialogContentMotion,
   dialogOverlayMotion,
@@ -71,6 +73,24 @@ function DialogContent({
   showCloseButton?: boolean;
   size?: DialogContentSize;
 }) {
+  const isMobile = useIsMobile();
+  // All dialog consumers share the phone presentation; callers cannot forget
+  // to opt into a responsive wrapper. Keep the existing Radix root and title
+  // context, and reuse the canonical sheet's edge motion and focus handling.
+  if (isMobile) {
+    return (
+      <SheetContent
+        side="bottom"
+        showCloseButton={showCloseButton}
+        className={cn(className, "max-h-[90dvh] w-full max-w-none rounded-t-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] motion-reduce:animate-none")}
+        {...props}
+        data-slot="dialog-content"
+        data-presentation="bottom-sheet"
+      >
+        {children}
+      </SheetContent>
+    );
+  }
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
