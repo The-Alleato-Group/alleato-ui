@@ -13,6 +13,8 @@ import { TooltipProvider } from "../src/components/tooltip";
 import { PageTabs } from "../src/layout/page-tabs";
 import { TableHostProvider, type TableHost } from "../src/tables/table-host";
 import {
+  pruneSelectionToRows,
+  resolveBulkDeleteTargets,
   UnifiedTablePage,
   type UnifiedTablePageProps,
   type TableColumn,
@@ -279,12 +281,102 @@ describe("portable unified table", () => {
     mount(value);
     fireEvent.click(screen.getByRole("button", { name: "Delete 3 selected" }));
     const dialog = screen.getByRole("alertdialog");
+    expect(dialog.textContent).toContain("Delete 1 page?");
     expect(dialog.textContent).toContain("Remove app pages only.");
+    expect(dialog.textContent).toContain(
+      "2 other selected pages can't be deleted and will be skipped.",
+    );
+    expect(
+      within(dialog).queryByRole("button", { name: "Delete 3 pages" }),
+    ).toBeNull();
     fireEvent.click(
-      within(dialog).getByRole("button", { name: "Delete 3 pages" }),
+      within(dialog).getByRole("button", { name: "Delete 1 page" }),
     );
     expect(batch).toHaveBeenCalledExactlyOnceWith([records[1]]);
     expect(single).not.toHaveBeenCalled();
+  });
+  it("offers no delete when none of the selected rows can be deleted", () => {
+    const value = props();
+    const single = vi.fn();
+    value.table.onDelete = single;
+    value.table.allowDelete = () => false;
+    value.selection = {
+      selectedIds: ["a", "b"],
+      onSelectAll: vi.fn(),
+      onSelectRow: vi.fn(),
+    };
+    mount(value);
+    fireEvent.click(screen.getByRole("button", { name: "Delete 2 selected" }));
+    const dialog = screen.getByRole("alertdialog");
+    expect(dialog.textContent).toContain("No items to delete");
+    expect(dialog.textContent).toContain(
+      "None of the 2 selected items can be deleted.",
+    );
+    expect(within(dialog).queryByRole("button", { name: /^Delete/ })).toBeNull();
+    expect(single).not.toHaveBeenCalled();
+  });
+  it("drops a row deleted from its own menu from the internal selection", async () => {
+    const value = props();
+    const remove = vi.fn();
+    value.table.onDelete = remove;
+    const view = mount(value);
+    const selectRow = (name: string) =>
+      fireEvent.click(
+        within(
+          screen.getByRole("cell", { name }).closest("tr")!,
+        ).getByRole("checkbox", { name: "Select row" }),
+      );
+    selectRow("Bravo");
+    expect(
+      screen.getByRole("button", { name: "Delete 1 selected" }),
+    ).toBeTruthy();
+    // The owner deleted Bravo; its next render no longer carries the row.
+    view.rerender(
+      <TooltipProvider>
+        <TableHostProvider host={makeHost()}>
+          <UnifiedTablePage
+            {...value}
+            data={{ items: [records[1]], isLoading: false }}
+          />
+        </TableHostProvider>
+      </TooltipProvider>,
+    );
+    await vi.waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /Delete \d+ selected/ }),
+      ).toBeNull(),
+    );
+    selectRow("Alpha");
+    fireEvent.click(screen.getByRole("button", { name: "Delete 1 selected" }));
+    fireEvent.click(
+      within(screen.getByRole("alertdialog")).getByRole("button", {
+        name: "Delete 1 item",
+      }),
+    );
+    expect(remove).toHaveBeenCalledExactlyOnceWith(records[1]);
+  });
+  it("keeps the internal selection while the first load has no rows yet", async () => {
+    const value = props();
+    value.table.onDelete = vi.fn();
+    const view = mount(value);
+    fireEvent.click(
+      within(
+        screen.getByRole("cell", { name: "Bravo" }).closest("tr")!,
+      ).getByRole("checkbox", { name: "Select row" }),
+    );
+    const rerender = (data: UnifiedTablePageProps<RecordRow>["data"]) =>
+      view.rerender(
+        <TooltipProvider>
+          <TableHostProvider host={makeHost()}>
+            <UnifiedTablePage {...value} data={data} />
+          </TableHostProvider>
+        </TooltipProvider>,
+      );
+    rerender({ items: [], isLoading: true });
+    rerender({ items: records, isLoading: false });
+    expect(
+      screen.getByRole("button", { name: "Delete 1 selected" }),
+    ).toBeTruthy();
   });
   it("owns no application aliases or network endpoints", () => {
     for (const file of readdirSync(path.resolve("src/tables")).filter((file) =>
@@ -436,5 +528,31 @@ describe("draft price table behavior", () => {
     );
     fireEvent.click(screen.getAllByRole("button", { name: "Edit Price" })[2]);
     expect(screen.getByRole("textbox")).toHaveProperty("value", "275");
+  });
+});
+
+describe("selection helpers", () => {
+  const getRowId = (row: RecordRow) => row.id;
+  it("prunes ids that left the rows and keeps the same array when nothing did", () => {
+    const kept = ["a", "b"];
+    expect(pruneSelectionToRows(kept, records, getRowId)).toBe(kept);
+    expect(pruneSelectionToRows(["a", "gone"], records, getRowId)).toEqual([
+      "a",
+    ]);
+    expect(pruneSelectionToRows(["a"], [], getRowId)).toEqual([]);
+  });
+  it("resolves bulk-delete targets as visible rows the predicate allows", () => {
+    expect(
+      resolveBulkDeleteTargets(
+        ["a", "b", "off-page"],
+        records,
+        getRowId,
+        (row) => row.id !== "b",
+      ),
+    ).toEqual({ items: [records[1]], skippedCount: 2 });
+    expect(resolveBulkDeleteTargets(["b"], records, getRowId)).toEqual({
+      items: [records[0]],
+      skippedCount: 0,
+    });
   });
 });
