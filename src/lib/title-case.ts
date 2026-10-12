@@ -1,9 +1,9 @@
 /**
- * Title Case for headings the product authors: every word capitalised except
+ * Title Case for UI-authored headings and page-tab labels: every word capitalised except
  * the short function words inside the phrase (owner, 2026-09-23: "every word is
  * capitalized other than pronouns like of and the ... the heading
- * capitalization should be a global change"). Applied by the heading
- * components to string titles only; record titles and extracted text are user
+ * capitalization should be a global change"). Applied only at UI-owned
+ * heading and page-tab boundaries; record titles and extracted text are user
  * content and are never transformed.
  */
 

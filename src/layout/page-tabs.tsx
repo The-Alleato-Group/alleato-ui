@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../components/dropdown-menu";
+import { titleCase } from "../lib/title-case";
 import { cn } from "../lib/utils";
 
 export interface PageTabMenuItem {
@@ -202,6 +203,7 @@ export function PageTabs({
         >
           {tabs.map((tab) => {
             const isActive = tab.href === activeTabHref;
+            const tabLabel = titleCase(tab.label);
 
             if (tab.items) {
               return (
@@ -211,7 +213,7 @@ export function PageTabs({
                       type="button"
                       variant="ghost"
                       ref={isActive ? activeTabRef : undefined}
-                      aria-label={tab.label}
+                      aria-label={tabLabel}
                       data-testid={tab.testId}
                       className={getPageTabTriggerClassName(
                         isActive,
@@ -220,7 +222,7 @@ export function PageTabs({
                       )}
                       aria-current={isActive ? "page" : undefined}
                     >
-                      <span>{tab.label}</span>
+                      <span>{tabLabel}</span>
                       <ChevronDown
                         aria-hidden
                         className="size-3.5 opacity-70"
@@ -235,7 +237,7 @@ export function PageTabs({
                           onNavigate(item.href)
                         }
                       >
-                        {item.label}
+                        {titleCase(item.label)}
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuContent>
@@ -252,7 +254,7 @@ export function PageTabs({
                   onClick={() =>
                     onNavigate(tab.href)
                   }
-                  aria-label={tab.label}
+                  aria-label={tabLabel}
                   data-testid={tab.testId}
                   className={getPageTabTriggerClassName(
                     isActive,
@@ -261,7 +263,7 @@ export function PageTabs({
                   )}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <span>{tab.label}</span>
+                  <span>{tabLabel}</span>
                   {tab.count !== undefined ? (
                     <span
                       data-testid={tab.countTestId}
