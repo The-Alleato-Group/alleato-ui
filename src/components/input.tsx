@@ -4,7 +4,7 @@ import { cn } from "../lib/utils"
 import { formControlVariants } from "./form-control-styles"
 
 interface InputProps extends React.ComponentProps<"input"> {
-  variant?: "default" | "inline";
+  variant?: "default" | "inline" | "table-cell";
 }
 
 function Input({ className, type, variant = "default", ...props }: InputProps) {
@@ -17,7 +17,7 @@ function Input({ className, type, variant = "default", ...props }: InputProps) {
       className={cn(
         formControlVariants({ variant }),
         "file:text-foreground py-1 text-base file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none md:text-sm",
-        className
+        className,
       )}
       {...props}
     />

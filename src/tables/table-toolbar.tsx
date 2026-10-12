@@ -2008,6 +2008,7 @@ export function TableToolbar({
               full-width settings row is the wrong shape for an icon action.
             */}
             {leadingActions}
+            {customActions}
 
             <SidePanel open={mobilePanelOpen} onOpenChange={setMobilePanelOpen}>
               <SidePanelTrigger asChild>
