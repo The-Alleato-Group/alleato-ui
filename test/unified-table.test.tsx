@@ -355,7 +355,7 @@ describe("portable unified table", () => {
     );
     expect(remove).toHaveBeenCalledExactlyOnceWith(records[1]);
   });
-  it("keeps the internal selection while the first load has no rows yet", async () => {
+  it("keeps the internal selection while a load or refetch has no rows yet", async () => {
     const value = props();
     value.table.onDelete = vi.fn();
     const view = mount(value);
@@ -374,6 +374,8 @@ describe("portable unified table", () => {
       );
     rerender({ items: [], isLoading: true });
     rerender({ items: records, isLoading: false });
+    rerender({ items: [], isLoading: false, isFetching: true });
+    rerender({ items: records, isLoading: false, isFetching: false });
     expect(
       screen.getByRole("button", { name: "Delete 1 selected" }),
     ).toBeTruthy();

@@ -2739,15 +2739,16 @@ export function UnifiedTablePage<T>({
   visibleItemsRef.current = dateRangeFilteredItems;
 
   // Internal selection follows the rows: a deleted, searched-out, filtered-out
-  // or off-page row leaves it. Skipped while the first load is in flight so an
-  // empty placeholder list cannot wipe a selection. A parent that passes
+  // or off-page row leaves it. Skipped while a load or refetch is in flight so
+  // an empty placeholder list cannot wipe a selection; the prune runs once the
+  // rows arrive. A parent that passes
   // `selection` owns pruning (and may keep cross-page selection on purpose).
   React.useEffect(() => {
-    if (selection || data.isLoading) return;
+    if (selection || data.isLoading || data.isFetching) return;
     setInternalSelectedIds((previous) =>
       pruneSelectionToRows(previous, dateRangeFilteredItems, getRowIdRef.current),
     );
-  }, [selection, data.isLoading, dateRangeFilteredItems]);
+  }, [selection, data.isLoading, data.isFetching, dateRangeFilteredItems]);
 
   // Resolved only while the dialog is open; the last result is kept through
   // the close animation, after the confirm handler has cleared the selection,
