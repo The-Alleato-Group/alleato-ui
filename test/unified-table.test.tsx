@@ -123,6 +123,18 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("portable unified table", () => {
+  it("keeps custom data actions reachable in the mobile toolbar", () => {
+    vi.stubGlobal("matchMedia", vi.fn((query: string) => ({
+      matches: true, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn(),
+    })));
+    const onAction = vi.fn();
+    const value = props();
+    value.toolbar.customActions = <button onClick={onAction}>Pricing actions</button>;
+    mount(value);
+    fireEvent.click(screen.getByRole("button", { name: "Pricing actions" }));
+    expect(onAction).toHaveBeenCalledOnce();
+  });
+
   it("requires explicit host integration instead of silently dropping application services", () => {
     vi.spyOn(console, "error").mockImplementation(() => undefined);
     expect(() => render(<UnifiedTablePage {...props()} />)).toThrow(
