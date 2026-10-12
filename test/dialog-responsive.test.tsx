@@ -2,6 +2,7 @@ import * as React from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../src/components/dialog";
+import { Modal, ModalContent, ModalDescription, ModalTitle, ModalTrigger } from "../src/components/unified-modal";
 
 function viewport(width: number) {
   Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
@@ -10,8 +11,17 @@ function viewport(width: number) {
     addEventListener: vi.fn(), removeEventListener: vi.fn(),
   }));
 }
+let modal = false;
 function Editor({ showCloseButton = true, onEscapeKeyDown = vi.fn() }) {
   const [open, setOpen] = React.useState(false);
+  if (modal) return <Modal open={open} onOpenChange={setOpen}>
+    <ModalTrigger>Edit content</ModalTrigger>
+    <ModalContent size="2xl" hideCloseButton={!showCloseButton} data-testid="editor" onEscapeKeyDown={onEscapeKeyDown}>
+      <ModalTitle>Edit content item</ModalTitle>
+      <ModalDescription>Choose fields.</ModalDescription>
+      <input aria-label="Owner" />
+    </ModalContent>
+  </Modal>;
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger>Edit content</DialogTrigger>
     <DialogContent showCloseButton={showCloseButton} data-testid="editor" onEscapeKeyDown={onEscapeKeyDown}>
@@ -28,7 +38,8 @@ async function openEditor() {
 afterEach(cleanup);
 beforeEach(() => viewport(390));
 
-describe("dialog presentation and accessibility", () => {
+describe.each(["DialogContent", "ModalContent"])("%s presentation and accessibility", (entry) => {
+  beforeEach(() => { modal = entry === "ModalContent"; });
   it.each([375, 390, 414])("uses the canonical bottom sheet at %ipx with forwarded content props", async (width) => {
     viewport(width); render(<Editor />);
     const dialog = await openEditor();
