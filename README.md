@@ -14,10 +14,10 @@ version bump.
 ## Install
 
 Install a published [GitHub release](https://github.com/The-Alleato-Group/alleato-ui/releases)
-tag (the package is not published to npm). The verified consumer release is v0.6.2:
+tag (the package is not published to npm). The verified consumer release is v0.6.3:
 
 ```bash
-pnpm add github:The-Alleato-Group/alleato-ui#v0.6.2
+pnpm add github:The-Alleato-Group/alleato-ui#v0.6.3
 ```
 
 To update an app, change the tag in its `package.json` and reinstall.
