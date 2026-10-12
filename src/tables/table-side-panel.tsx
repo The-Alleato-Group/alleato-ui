@@ -110,7 +110,7 @@ export function TableSidePanel({
       className={cn(
         "flex min-h-0 flex-col overflow-hidden bg-background transition-[width,transform,opacity] duration-200 ease-out motion-reduce:transition-none",
         mode === "overlay" &&
-          "fixed inset-0 z-30 shadow-[-12px_0_28px_-22px_rgba(15,23,42,0.32)] motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-right-2 motion-safe:duration-200",
+          "fixed bottom-0 right-0 top-0 z-30 shadow-[-12px_0_28px_-22px_rgba(15,23,42,0.32)] motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-right-2 motion-safe:duration-200",
         mode === "inline" &&
           "relative h-full min-w-0 shrink-0 border-l border-border/70",
         mode === "mobile" &&
