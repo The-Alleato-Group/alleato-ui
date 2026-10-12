@@ -66,6 +66,8 @@ export interface MobileCardListProps<T> {
   columns: MobileCardColumn<T>[];
   getRowId: (item: T) => string;
   activeRowId?: string | null;
+  /** Editor focus is distinct from row selection. */
+  editingRowId?: string | null;
   onRowClick?: (item: T) => void;
   /** Hide the click affordance (and skip the click) on rows this returns false for. Defaults to clickable whenever `onRowClick` is set. */
   allowRowClick?: (item: T) => boolean;
@@ -94,6 +96,7 @@ export function MobileCardList<T>({
   columns,
   getRowId,
   activeRowId,
+  editingRowId,
   onRowClick,
   allowRowClick,
   selectedIds,
@@ -110,10 +113,7 @@ export function MobileCardList<T>({
 }: MobileCardListProps<T>) {
   return (
     <div
-      className={cn(
-        "sm:hidden",
-        isFetching && "opacity-70 transition-opacity",
-      )}
+      className={cn("sm:hidden", isFetching && "opacity-70 transition-opacity")}
     >
       <div className="flex flex-col gap-3">
         {items.map((item) => {
@@ -129,13 +129,21 @@ export function MobileCardList<T>({
           // and a chevron (2026-09-22). Its affordance is the card tap. The
           // next 2-3 labelled columns become metadata rows.
           const labelled = columns.filter((col) => col.label.trim() !== "");
-          const rendered = labelled.map((col) => ({ col, value: col.render(item) }));
-          const titleIndex = rendered.findIndex(({ value }) => hasRenderedValue(value));
-          const titleCol = titleIndex === -1 ? labelled[0] : labelled[titleIndex];
+          const rendered = labelled.map((col) => ({
+            col,
+            value: col.render(item),
+          }));
+          const titleIndex = rendered.findIndex(({ value }) =>
+            hasRenderedValue(value),
+          );
+          const titleCol =
+            titleIndex === -1 ? labelled[0] : labelled[titleIndex];
           // A column that renders nothing for this row contributes nothing —
           // a label with no value beside it is noise, not information.
           const visibleDetails = rendered
-            .filter((_, index) => index !== (titleIndex === -1 ? 0 : titleIndex))
+            .filter(
+              (_, index) => index !== (titleIndex === -1 ? 0 : titleIndex),
+            )
             .slice(0, 3)
             .filter(({ value }) => hasRenderedValue(value));
 
@@ -150,6 +158,8 @@ export function MobileCardList<T>({
                 isClickable &&
                   "cursor-pointer hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.99] active:bg-muted/40",
                 (isActive || isSelected) && "ring-2 ring-primary/60",
+                editingRowId === rowId &&
+                  "bg-muted border-l-2 border-l-primary",
               )}
               onClick={isClickable ? () => onRowClick?.(item) : undefined}
               onKeyDown={
