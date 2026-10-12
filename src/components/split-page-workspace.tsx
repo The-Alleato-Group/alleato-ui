@@ -11,6 +11,7 @@ import {
 import { Plus } from "lucide-react";
 
 import { Button } from "./button";
+import { SelectionCheckbox } from "../ds/selection-checkbox";
 import { getPageTabTriggerClassName } from "../layout/page-tabs";
 import {
   APP_SHELL_SPLIT_VIEW_CLASSNAME,
@@ -103,6 +104,8 @@ SplitPageWorkspaceRailAddAction.displayName = "SplitPageWorkspaceRailAddAction";
 type SplitPageWorkspaceRailHeaderProps = {
   /** The concise name of the list or inspector currently in view. */
   title: React.ReactNode;
+  /** Select visible records beside the title; the header owns disclosure. */
+  selection?: React.ComponentProps<typeof SelectionCheckbox>;
   /** Secondary context, such as the current project or visible item count. */
   description?: React.ReactNode;
   /** Compact, reusable controls such as search, filters, or pane controls. */
@@ -123,6 +126,7 @@ type SplitPageWorkspaceRailHeaderProps = {
  */
 export function SplitPageWorkspaceRailHeader({
   title,
+  selection,
   description,
   actions,
   leading,
@@ -137,14 +141,27 @@ export function SplitPageWorkspaceRailHeader({
       <div className="flex min-w-0 flex-wrap items-start gap-3 sm:flex-nowrap">
         {leading ? <div className="shrink-0">{leading}</div> : null}
         <div className="min-w-0 flex-1 basis-full sm:basis-auto">
-          <h2
-            className={cn(
-              "truncate text-lg font-semibold tracking-[-0.01em] text-foreground",
-              titleClassName,
-            )}
-          >
-            {title}
-          </h2>
+          <div className="group/title flex min-w-0 items-center gap-1">
+            {selection ? (
+              <label
+                className={cn(
+                  "-my-2 -ml-3 flex size-11 shrink-0 cursor-pointer items-center justify-center transition-opacity motion-reduce:transition-none",
+                  "focus-within:pointer-events-auto focus-within:opacity-100 group-hover/title:pointer-events-auto group-hover/title:opacity-100 [@media(hover:none)]:pointer-events-auto [@media(hover:none)]:opacity-100",
+                  selection.checked === false ? "pointer-events-none opacity-0" : "opacity-100",
+                )}
+              >
+                <SelectionCheckbox {...selection} />
+              </label>
+            ) : null}
+            <h2
+              className={cn(
+                "min-w-0 truncate text-lg font-semibold tracking-[-0.01em] text-foreground",
+                titleClassName,
+              )}
+            >
+              {title}
+            </h2>
+          </div>
           {description ? (
             <p className="mt-1 truncate text-sm text-muted-foreground">
               {description}

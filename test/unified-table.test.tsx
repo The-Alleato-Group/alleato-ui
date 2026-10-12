@@ -138,4 +138,18 @@ describe("portable unified table", () => {
       expect(source).not.toMatch(/(?:fetch|apiFetch)\s*\(|["']\/api\//);
     }
   });
+
+  it.each([undefined, ["name", "status"]])("owns one select-all beside the split title (%s)", splitColumns => {
+    const value = props();
+    value.toolbar.currentView = "split";
+    value.table.splitColumns = splitColumns;
+    const selectAll = vi.fn();
+    value.selection = { selectedIds: [], onSelectAll: selectAll, onSelectRow: vi.fn() };
+    mount(value);
+    const checkbox = screen.getByRole("checkbox", { name: "Select all rows" });
+    expect(screen.getByRole("heading", { name: "Records", level: 2 }).parentElement?.contains(checkbox)).toBe(true);
+    expect(document.querySelector("table thead [role=checkbox]")).toBeNull();
+    fireEvent.click(checkbox);
+    expect(selectAll).toHaveBeenCalledWith(true, ["b", "a"]);
+  });
 });
