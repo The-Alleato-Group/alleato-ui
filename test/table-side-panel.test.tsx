@@ -7,8 +7,11 @@ describe("TableSidePanel viewport height", () => {
 
     const panel = screen.getByRole("complementary", { name: "Record details" });
     expect(panel.classList.contains("fixed")).toBe(true);
-    expect(panel.classList.contains("inset-0")).toBe(true);
-    expect(panel.classList.contains("top-12")).toBe(false);
+    expect(panel.classList.contains("top-12")).toBe(true);
+    expect(panel.classList.contains("bottom-0")).toBe(true);
+    expect(panel.classList.contains("right-0")).toBe(true);
+    expect(panel.classList.contains("left-0")).toBe(false);
+    expect(panel.classList.contains("top-0")).toBe(false);
   });
 
   it("keeps the inline panel sized to its split-view container", () => {
