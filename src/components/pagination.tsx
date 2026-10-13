@@ -4,239 +4,86 @@ import * as React from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
-import { Input } from "./input";
 
-// Simple Pagination Component (for basic use cases)
 type SimplePaginationProps = {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  /** Compact prev/next controls for embedded tables and constrained layouts. */
-  variant?: "default" | "compact";
+  /**
+   * Records across every page. With `perPage` the label reads
+   * "26–50 of 340"; without it the label falls back to "Page 2 of 14" rather
+   * than guessing a count from the page math.
+   */
+  totalItems?: number;
+  perPage?: number;
+  className?: string;
 };
 
-const MAX_PAGES_SHOWN = 6;
-
+/**
+ * Record range plus previous/next arrows: "26–50 of 340 ‹ ›".
+ *
+ * No numbered page buttons, no first/last jumps (2026-10-13, after a Mobbin
+ * review of Sentry, Squarespace, Navattic and Vercel tables): the count is the
+ * one fact the table cannot show by itself, and the arrows are the one action.
+ */
 export function SimplePagination({
   currentPage,
   totalPages,
   onPageChange,
-  variant = "default",
+  totalItems,
+  perPage,
+  className,
 }: SimplePaginationProps) {
-  if (variant === "compact") {
-    return (
-      <nav role="navigation" aria-label="Pagination" className="text-foreground">
-        <ul className="flex items-center gap-1 text-muted-foreground">
-          <li className="mr-1 text-xs tabular-nums">Page {currentPage} of {totalPages}</li>
-          <li>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={currentPage === 1}
-              aria-label="Previous page"
-              onClick={() => onPageChange(currentPage - 1)}
-              className="size-8 bg-transparent p-0 text-muted-foreground hover:bg-transparent disabled:bg-transparent"
-            >
-              <ChevronLeft className="size-4" />
-            </Button>
-          </li>
-          <li>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={currentPage === totalPages}
-              aria-label="Next page"
-              onClick={() => onPageChange(currentPage + 1)}
-              className="size-8 p-0 text-muted-foreground"
-            >
-              <ChevronRight className="size-4" />
-            </Button>
-          </li>
-        </ul>
-      </nav>
-    );
-  }
-
   return (
     <nav
-      role="navigation"
       aria-label="Pagination"
-      className="text-foreground"
+      className={cn("flex items-center gap-1 text-sm text-muted-foreground", className)}
     >
-      <ul className="flex items-center justify-center flex-wrap gap-1 text-muted-foreground">
-        <li>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={currentPage === 1}
-            aria-label="Previous page"
-            onClick={() => onPageChange(currentPage - 1)}
-            className="h-8 gap-1 bg-transparent text-xs font-medium text-muted-foreground hover:bg-transparent disabled:bg-transparent"
-          >
-            <ChevronLeft />
-            Previous
-          </Button>
-        </li>
-
-        {Array.from({ length: totalPages }, (_, index) => {
-          const isActive = currentPage === index + 1;
-
-          if (totalPages > MAX_PAGES_SHOWN) {
-            if (currentPage > 3) {
-              if (index + 1 < currentPage) {
-                return null;
-              }
-
-              if (index + 1 === currentPage + 3) {
-                return (
-                  <li key={index}>
-                    <SimplePaginationEllipsis />
-                  </li>
-                );
-              }
-
-              if (index + 1 < currentPage + 3 || index + 1 > totalPages - 2) {
-                return (
-                  <li key={index}>
-                    <SimplePaginationButton
-                      page={index + 1}
-                      isActive={isActive}
-                      onPageChange={onPageChange}
-                    />
-                  </li>
-                );
-              }
-            }
-
-            if (index === 3) {
-              return (
-                <li key={index}>
-                  <SimplePaginationEllipsis />
-                </li>
-              );
-            }
-
-            if (index > 2 && index < totalPages - 2) {
-              return null;
-            }
-          }
-
-          return (
-            <li key={index}>
-              <SimplePaginationButton
-                page={index + 1}
-                isActive={isActive}
-                onPageChange={onPageChange}
-              />
-            </li>
-          );
-        })}
-
-        <li>
-          <Button
-            variant="ghost"
-            size="sm"
-            disabled={currentPage === totalPages}
-            aria-label="Next page"
-            onClick={() => onPageChange(currentPage + 1)}
-            className="h-8 gap-1 text-xs font-medium text-muted-foreground"
-          >
-            Next
-            <ChevronRight />
-          </Button>
-        </li>
-
-        {totalPages > MAX_PAGES_SHOWN && (
-          <li>
-            <SimplePaginationJump
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={onPageChange}
-            />
-          </li>
-        )}
-      </ul>
+      <span className="mr-2 whitespace-nowrap tabular-nums" aria-live="polite">
+        {formatPaginationRange({ currentPage, totalPages, totalItems, perPage })}
+      </span>
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={currentPage <= 1}
+        aria-label="Previous page"
+        onClick={() => onPageChange(currentPage - 1)}
+        className="size-8 p-0 text-muted-foreground"
+      >
+        <ChevronLeft className="size-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={currentPage >= totalPages}
+        aria-label="Next page"
+        onClick={() => onPageChange(currentPage + 1)}
+        className="size-8 p-0 text-muted-foreground"
+      >
+        <ChevronRight className="size-4" />
+      </Button>
     </nav>
   );
 }
 
-function SimplePaginationJump({
+export function formatPaginationRange({
   currentPage,
   totalPages,
-  onPageChange,
+  totalItems,
+  perPage,
 }: {
   currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
-}) {
-  const [value, setValue] = React.useState("");
-
-  const commit = () => {
-    const parsed = Number.parseInt(value, 10);
-    setValue("");
-    if (Number.isNaN(parsed)) return;
-    const next = Math.min(Math.max(parsed, 1), totalPages);
-    if (next !== currentPage) onPageChange(next);
-  };
-
-  return (
-    <div className="ml-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-      <span>Go to</span>
-      <Input
-        type="number"
-        min={1}
-        max={totalPages}
-        inputMode="numeric"
-        value={value}
-        aria-label="Go to page"
-        placeholder={String(currentPage)}
-        onChange={(event) => setValue(event.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            commit();
-          }
-        }}
-        onBlur={commit}
-        className="h-8 w-14 px-2 text-center text-xs [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-      />
-    </div>
-  );
-}
-
-function SimplePaginationButton({
-  page,
-  isActive,
-  onPageChange,
-}: {
-  page: number;
-  isActive: boolean;
-  onPageChange: (page: number) => void;
-}) {
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      aria-label={`Go to page ${page}`}
-      aria-current={isActive ? "page" : undefined}
-      className={cn(
-        "size-8 rounded-full p-0 text-xs font-medium hover:bg-accent hover:text-primary",
-        // Active page is marked by color and weight only; never a filled background.
-        isActive ? "bg-transparent text-primary font-semibold" : "bg-transparent text-muted-foreground",
-      )}
-      onClick={() => onPageChange(page)}
-    >
-      {page}
-    </Button>
-  );
-}
-
-function SimplePaginationEllipsis() {
-  return (
-    <span className="flex h-8 min-w-8 items-center justify-center text-xs text-muted-foreground">
-      <MoreHorizontal className="h-4 w-4" />
-    </span>
-  );
+  totalItems?: number;
+  perPage?: number;
+}): string {
+  if (totalItems === undefined || perPage === undefined) {
+    return `Page ${currentPage} of ${totalPages}`;
+  }
+  if (totalItems === 0) return "0 of 0";
+  const first = Math.min((currentPage - 1) * perPage + 1, totalItems);
+  const last = Math.min(currentPage * perPage, totalItems);
+  return `${first.toLocaleString("en-US")}–${last.toLocaleString("en-US")} of ${totalItems.toLocaleString("en-US")}`;
 }
 
 // Composable Pagination Components (shadcn style)

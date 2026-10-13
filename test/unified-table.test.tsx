@@ -717,3 +717,84 @@ describe("selection helpers", () => {
     });
   });
 });
+
+describe("table pagination footer", () => {
+  const manyRecords: RecordRow[] = Array.from({ length: 30 }, (_, index) => ({
+    id: `r${index + 1}`,
+    name: `Record ${String(index + 1).padStart(2, "0")}`,
+    status: "Draft",
+  }));
+  function manyProps(): UnifiedTablePageProps<RecordRow> {
+    const value = props();
+    value.data = { items: manyRecords, isLoading: false };
+    value.toolbar = { ...value.toolbar, totalItems: 30, filteredItems: 30 };
+    return value;
+  }
+  beforeEach(() => {
+    // Radix Select captures the pointer on open; jsdom has no pointer capture.
+    Object.assign(HTMLElement.prototype, {
+      hasPointerCapture: () => false,
+      setPointerCapture: () => undefined,
+      releasePointerCapture: () => undefined,
+    });
+    vi.stubGlobal(
+      "IntersectionObserver",
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+  });
+  function openRowsMenu() {
+    fireEvent.keyDown(screen.getByRole("combobox", { name: "Rows to show" }), { key: " " });
+  }
+
+  it("shows the record range and arrows instead of numbered pages", () => {
+    mount(manyProps());
+    const pager = screen.getByRole("navigation", { name: "Pagination" });
+    expect(pager.textContent).toContain("1–25 of 30");
+    expect(within(pager).queryByRole("button", { name: /Go to page/ })).toBeNull();
+    expect((within(pager).getByRole("button", { name: "Previous page" }) as HTMLButtonElement).disabled).toBe(true);
+    fireEvent.click(within(pager).getByRole("button", { name: "Next page" }));
+    expect(pager.textContent).toContain("26–30 of 30");
+    expect((within(pager).getByRole("button", { name: "Next page" }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it("offers page sizes and continue-on-scroll in one rows menu, with no separate loading select", async () => {
+    mount(manyProps());
+    expect(screen.queryByRole("combobox", { name: "Table loading behavior" })).toBeNull();
+    expect(screen.getByRole("combobox", { name: "Rows to show" }).textContent).toBe("25 per page");
+    openRowsMenu();
+    expect(await screen.findByRole("option", { name: "50 per page" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("option", { name: "Continue on scroll" }));
+    expect(screen.getByRole("combobox", { name: "Rows to show" }).textContent).toBe("Continue on scroll");
+    expect(screen.queryByRole("navigation", { name: "Pagination" })).toBeNull();
+
+    openRowsMenu();
+    fireEvent.click(await screen.findByRole("option", { name: "10 per page" }));
+    const pager = screen.getByRole("navigation", { name: "Pagination" });
+    expect(pager.textContent).toContain("1–10 of 30");
+  });
+
+  it("never guesses a server total: page math until the host reports totalItems", async () => {
+    const value = props();
+    value.pagination = {
+      page: 2,
+      totalPages: 3,
+      perPage: 25,
+      onPageChange: vi.fn(),
+      onPerPageChange: vi.fn(),
+    };
+    const view = mount(value);
+    expect(screen.getByRole("navigation", { name: "Pagination" }).textContent).toContain("Page 2 of 3");
+    // A server table that reports no fetch state cannot continue on scroll.
+    openRowsMenu();
+    expect(await screen.findByRole("option", { name: "25 per page" })).toBeTruthy();
+    expect(screen.queryByRole("option", { name: "Continue on scroll" })).toBeNull();
+    view.unmount();
+
+    value.pagination = { ...value.pagination, totalItems: 61 };
+    mount(value);
+    expect(screen.getByRole("navigation", { name: "Pagination" }).textContent).toContain("26–50 of 61");
+  });
+});

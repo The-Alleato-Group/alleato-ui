@@ -90,6 +90,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "../components/select";
@@ -1636,6 +1637,12 @@ export interface UnifiedTablePageProps<T> {
     onPageChange: (page: number) => void;
     onPerPageChange: (perPage: string) => void;
     clientSide?: boolean;
+    /**
+     * Records across every page of a server-paginated table. The footer shows
+     * "26–50 of 340" when it is known and "Page 2 of 14" when it is not;
+     * client-side tables count their own rows.
+     */
+    totalItems?: number;
   };
   footerTotals?: {
     /** Label shown in the first visible column (default: "Totals") */
@@ -6103,69 +6110,59 @@ export function UnifiedTablePage<T>({
               }
             : null);
         if (!paginProps || paginProps.totalPages <= 1) return null;
+        const totalItems =
+          !pagination || pagination.clientSide
+            ? rowOrderedItems.length
+            : pagination.totalItems;
+        // One menu owns how many rows show: a page size, or "Continue on
+        // scroll" (2026-10-13 — Megan: the scroll choice belongs in the row
+        // count dropdown, not in a second "Loading" select). Tables that
+        // cannot report fetch state never offer scroll (see
+        // supportsContinuousLoading).
+        const rowsMenuValue = shouldContinuouslyLoad
+          ? "scroll"
+          : String(paginProps.perPage);
+        const handleRowsMenuChange = (value: string) => {
+          if (value === "scroll") {
+            handlePaginationBehaviorChange("scroll");
+            return;
+          }
+          if (paginationBehavior === "scroll") {
+            handlePaginationBehaviorChange("pages");
+          }
+          handlePerPageChange(value);
+        };
         // Print renders every row (useIsPrinting), so the pager means nothing
         // on paper; print-document.css hides data-print-hide.
         return (
           <div
             data-print-hide=""
-            className="flex flex-col gap-4 items-center justify-between pt-6 md:flex-row"
+            className="flex items-center justify-between gap-4 pt-4"
           >
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <span>Rows per page</span>
-                <Select
-                  value={String(paginProps.perPage)}
-                  onValueChange={handlePerPageChange}
-                >
-                  <SelectTrigger
-                    variant="inline"
-                    size="sm"
-                    className="h-8 w-16 px-1"
-                    aria-label="Rows per page"
-                  >
-                    <SelectValue placeholder={String(paginProps.perPage)} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[10, 25, 50, 100, 150].map((size) => (
-                      <SelectItem key={size} value={String(size)}>
-                        {size}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center gap-2">
-                <span>Loading</span>
-                <Select
-                  value={paginationBehavior}
-                  onValueChange={(value) =>
-                    handlePaginationBehaviorChange(
-                      value as TablePaginationBehavior,
-                    )
-                  }
-                >
-                  <SelectTrigger
-                    variant="inline"
-                    size="sm"
-                    className="h-8 min-w-36 px-1"
-                    aria-label="Table loading behavior"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pages">Pages</SelectItem>
+            <Select value={rowsMenuValue} onValueChange={handleRowsMenuChange}>
+              <SelectTrigger
+                variant="inline"
+                size="sm"
+                className="h-8 w-auto gap-1 px-1 text-sm text-muted-foreground"
+                aria-label="Rows to show"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 25, 50, 100, 150].map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size} per page
+                  </SelectItem>
+                ))}
+                {supportsContinuousLoading ? (
+                  <>
+                    <SelectSeparator />
                     <SelectItem value="scroll">Continue on scroll</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {paginationBehavior === "pages" ? (
-              <SimplePagination
-                currentPage={paginProps.page}
-                totalPages={paginProps.totalPages}
-                onPageChange={handlePageChange}
-              />
-            ) : (
+                  </>
+                ) : null}
+              </SelectContent>
+            </Select>
+            {shouldContinuouslyLoad ? (
               <div
                 ref={autoLoadSentinelRef}
                 className="flex items-center gap-2 text-sm text-muted-foreground"
@@ -6179,9 +6176,21 @@ export function UnifiedTablePage<T>({
                 ) : canLoadAnotherPage ? (
                   <span>More rows load as you scroll.</span>
                 ) : (
-                  <span>All rows loaded.</span>
+                  <span className="tabular-nums">
+                    {totalItems === undefined
+                      ? "All rows loaded"
+                      : `All ${totalItems.toLocaleString("en-US")} rows loaded`}
+                  </span>
                 )}
               </div>
+            ) : (
+              <SimplePagination
+                currentPage={paginProps.page}
+                totalPages={paginProps.totalPages}
+                totalItems={totalItems}
+                perPage={paginProps.perPage}
+                onPageChange={handlePageChange}
+              />
             )}
           </div>
         );
