@@ -30,7 +30,9 @@ const tabsListVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-muted/60",
+        // The canvas tint, one step darker than muted: at bg-muted/60 the strip
+        // all but vanished on a white card (owner, 2026-10-13, "slightly darker").
+        default: "bg-surface-alt",
         // Legacy compatibility for older top-of-page call sites. New page-level
         // navigation should use `PageTabs`; keep `Tabs` for section-level
         // content tabs.
