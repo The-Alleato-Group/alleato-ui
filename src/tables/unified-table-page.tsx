@@ -886,6 +886,24 @@ export function resolveDetailPaneColumns<T>(
   );
 }
 
+/**
+ * Records across every page for the footer's "26–50 of 340". A page passes
+ * `pagination.totalItems` when it knows it; otherwise the toolbar's filtered
+ * count is used when it agrees with the page count (it is the full filtered
+ * set, not one page). When it does not agree the footer falls back to
+ * "Page X of Y" rather than print a wrong range.
+ */
+export function resolvePaginationTotal(
+  pagination: { totalPages: number; perPage: number; totalItems?: number },
+  filteredItems: number | undefined,
+): number | undefined {
+  if (pagination.totalItems !== undefined) return pagination.totalItems;
+  if (filteredItems === undefined || pagination.perPage <= 0) return undefined;
+  return Math.max(1, Math.ceil(filteredItems / pagination.perPage)) === pagination.totalPages
+    ? filteredItems
+    : undefined;
+}
+
 export function isEmptyDisplayValue<T>(
   column: TableColumn<T>,
   item: T,
@@ -6144,7 +6162,7 @@ export function UnifiedTablePage<T>({
         const totalItems =
           !pagination || pagination.clientSide
             ? rowOrderedItems.length
-            : pagination.totalItems;
+            : resolvePaginationTotal(pagination, toolbar.filteredItems);
         // One menu owns how many rows show: a page size, or "Continue on
         // scroll" (2026-10-13 — Megan: the scroll choice belongs in the row
         // count dropdown, not in a second "Loading" select). Tables that

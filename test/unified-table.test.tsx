@@ -18,6 +18,7 @@ import {
   pruneSelectionToRows,
   resolveBulkDeleteTargets,
   resolveDetailPaneColumns,
+  resolvePaginationTotal,
   UnifiedTablePage,
   type UnifiedTablePageProps,
   type TableColumn,
@@ -460,6 +461,15 @@ describe("portable unified table", () => {
     expect(isEmptyDisplayValue(paneColumns[1]!, { ...row, fee: "$7,000" })).toBe(false);
     // A custom-rendered column cannot say it is empty, so it keeps its row.
     expect(isEmptyDisplayValue({ id: "x", label: "Custom", render: () => null }, row)).toBe(false);
+  });
+
+  it("derives the pager total from the filtered count only when it matches the pages", () => {
+    expect(resolvePaginationTotal({ totalPages: 4, perPage: 25, totalItems: 90 }, 10)).toBe(90);
+    // 31 controlled tables pass no total but their toolbar holds the full filtered set.
+    expect(resolvePaginationTotal({ totalPages: 4, perPage: 25 }, 90)).toBe(90);
+    // A server table whose toolbar counts one page: no range rather than a wrong one.
+    expect(resolvePaginationTotal({ totalPages: 14, perPage: 25 }, 25)).toBeUndefined();
+    expect(resolvePaginationTotal({ totalPages: 2, perPage: 25 }, undefined)).toBeUndefined();
   });
 
   it("separates the pane body from the record fields", () => {
