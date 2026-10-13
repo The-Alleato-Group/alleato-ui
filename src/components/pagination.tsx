@@ -25,6 +25,9 @@ type SimplePaginationProps = {
  * No numbered page buttons, no first/last jumps (2026-10-13, after a Mobbin
  * review of Sentry, Squarespace, Navattic and Vercel tables): the count is the
  * one fact the table cannot show by itself, and the arrows are the one action.
+ * The arrows stay transparent on hover and when disabled: a grey box on the
+ * disabled "previous" arrow at page 1 was removed on 2026-09-14 (Executive
+ * reports) and is pinned by the PM app's executive-feedback-layout test.
  */
 export function SimplePagination({
   currentPage,
@@ -48,7 +51,7 @@ export function SimplePagination({
         disabled={currentPage <= 1}
         aria-label="Previous page"
         onClick={() => onPageChange(currentPage - 1)}
-        className="size-8 p-0 text-muted-foreground"
+        className="size-8 p-0 text-muted-foreground hover:bg-transparent hover:text-foreground disabled:bg-transparent"
       >
         <ChevronLeft className="size-4" />
       </Button>
@@ -58,7 +61,7 @@ export function SimplePagination({
         disabled={currentPage >= totalPages}
         aria-label="Next page"
         onClick={() => onPageChange(currentPage + 1)}
-        className="size-8 p-0 text-muted-foreground"
+        className="size-8 p-0 text-muted-foreground hover:bg-transparent hover:text-foreground disabled:bg-transparent"
       >
         <ChevronRight className="size-4" />
       </Button>
