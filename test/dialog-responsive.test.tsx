@@ -2,6 +2,10 @@ import * as React from "react";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "../src/components/dialog";
+import { DialogHeader } from "../src/components/dialog";
+import { DrawerHeader } from "../src/components/drawer";
+import { SheetHeader } from "../src/components/sheet";
+import { ResponsiveDialog, ResponsiveDialogContent, ResponsiveDialogHeader, ResponsiveDialogTitle, ResponsiveDialogDescription } from "../src/components/responsive-dialog";
 import { Modal, ModalContent, ModalDescription, ModalTitle, ModalTrigger } from "../src/components/unified-modal";
 
 function viewport(width: number) {
@@ -71,4 +75,31 @@ describe.each(["DialogContent", "ModalContent"])("%s presentation and accessibil
     render(<Editor showCloseButton={false} />); await openEditor();
     expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
   });
+});
+
+
+it("keeps responsive dialog body padding and forwarded content props on mobile", async () => {
+  render(<ResponsiveDialog open>
+    <ResponsiveDialogContent data-testid="responsive-body">
+      <ResponsiveDialogHeader>
+        <ResponsiveDialogTitle>Save prices</ResponsiveDialogTitle>
+        <ResponsiveDialogDescription>Choose where to use these prices.</ResponsiveDialogDescription>
+      </ResponsiveDialogHeader>
+      <input aria-label="Template name" />
+    </ResponsiveDialogContent>
+  </ResponsiveDialog>);
+  const dialog = await screen.findByRole("dialog", { name: /save prices/i });
+  expect(dialog.getAttribute("data-presentation")).toBe("bottom-sheet");
+  expect(dialog.getAttribute("data-testid")).toBe("responsive-body");
+  expect(dialog.className.split(" ")).toContain("p-6");
+  expect(document.querySelector('[data-slot="drawer-content"]')).toBeNull();
+});
+
+it("left-aligns shared dialog and sheet headings by default", () => {
+  render(<><DialogHeader data-testid="dialog-header">Title</DialogHeader><DrawerHeader data-testid="drawer-header">Title</DrawerHeader><SheetHeader data-testid="sheet-header">Title</SheetHeader></>);
+  for (const name of ["dialog-header", "drawer-header", "sheet-header"]) {
+    const classes = screen.getByTestId(name).className;
+    expect(classes.split(" ")).toContain("text-left");
+    expect(classes).not.toContain("text-center");
+  }
 });
