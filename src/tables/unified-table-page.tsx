@@ -23,6 +23,7 @@ import {
   SplitPageWorkspaceRailHeader,
 } from "../components/split-page-workspace";
 import { TableSidePanel } from "./table-side-panel";
+import { X } from "lucide-react";
 
 import { useStoredPreference } from "../hooks/use-stored-preference";
 import { useIsMobile } from "../hooks/use-mobile";
@@ -376,9 +377,13 @@ function GenericTableSplitMobileSelectionSync({
 
 function GenericTableSplitDetailPane({
   listLabel,
+  header,
+  onCloseDetails,
   children,
 }: {
   listLabel: string;
+  header?: ReactNode;
+  onCloseDetails?: () => void;
   children: ReactNode;
 }) {
   const { onOpen } = useSplitPage();
@@ -389,13 +394,17 @@ function GenericTableSplitDetailPane({
           type="button"
           variant="ghost"
           size="sm"
-          onClick={onOpen}
+          onClick={() => {
+            onCloseDetails?.();
+            onOpen();
+          }}
           className="-ml-1 gap-1.5 shadow-none"
         >
           <ChevronLeft className="h-4 w-4" />
           {listLabel}
         </Button>
       </div>
+      {header}
       <SplitPageWorkspaceDetailContent>
         {children}
       </SplitPageWorkspaceDetailContent>
@@ -2569,7 +2578,7 @@ export function UnifiedTablePage<T>({
   // ── Side panel collapse & resize state ───────────────────────────────
   const panelCollapsible = sidePanel?.collapsible ?? true;
   const panelResizable = sidePanel?.resizable ?? true;
-  const isPeekPanel = Boolean(sidePanel);
+  const isPeekPanel = Boolean(sidePanel) && !canRenderSplitView;
   const panelController = useTableSidePanelController({
     enabled: Boolean(sidePanel),
     size: sidePanel?.size,
@@ -2582,7 +2591,10 @@ export function UnifiedTablePage<T>({
   // to both render it (one hidden only by CSS), so a panel with inputs existed
   // twice: duplicate field ids, two drafts, and every data hook ran twice.
   const isMobileViewport = useIsMobile();
-  const usesGenericSplitWorkspace = canRenderSplitView && !isSidePanelOpen;
+  // Split geometry belongs to the workspace, regardless of row selection.
+  // A page's sidePanel supplies detail content; it must not replace that frame
+  // or cause the outer page to mount a second header/toolbar.
+  const usesGenericSplitWorkspace = canRenderSplitView && !views?.split;
 
   const sourceItems =
     shouldContinuouslyLoad && !shouldClientPaginate && activePage > 1
@@ -6007,32 +6019,6 @@ export function UnifiedTablePage<T>({
             </div>
           );
 
-          if (sidePanel && effectiveActiveRowId) {
-            return (
-              <div className={TABLE_SPLIT_VIEW_CONTAINER_CLASSNAME}>
-                {primaryPane}
-                <div className={TABLE_SPLIT_VIEW_DESKTOP_PANEL_CLASSNAME}>
-                  <TableSidePanel
-                    mode="overlay"
-                    title={sidePanel.title}
-                    headerActions={sidePanel.headerActions}
-                    bodyLayout={sidePanel.bodyLayout}
-                    width={panelWidth}
-                    collapsed={panelCollapsed}
-                    collapsible={panelCollapsible}
-                    resizable={panelResizable}
-                    showCloseButton={sidePanel.showCloseButton}
-                    onClose={sidePanel.onClose}
-                    onToggleCollapsed={panelController.onToggleCollapsed}
-                    onResizeStart={panelController.onResizeStart}
-                  >
-                    {isMobileViewport ? null : sidePanelChildren}
-                  </TableSidePanel>
-                </div>
-              </div>
-            );
-          }
-
           return (
             <SplitPageWorkspaceFrame
               className={TABLE_SPLIT_VIEW_CONTAINER_CLASSNAME}
@@ -6051,9 +6037,38 @@ export function UnifiedTablePage<T>({
                 </div>
                 <GenericTableSplitDetailPane
                   listLabel={header.title || "Items"}
+                  header={activeItem && sidePanel ? (
+                    <SplitPageWorkspaceRailHeader
+                      title={sidePanel.title ?? "Details"}
+                      actions={
+                        <>
+                          {sidePanel.headerActions}
+                          {sidePanel.showCloseButton !== false ? (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              aria-label="Close details"
+                              onClick={() => {
+                                setInternalActiveRowId(null);
+                                sidePanel.onClose?.();
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          ) : null}
+                        </>
+                      }
+                    />
+                  ) : undefined}
+                  onCloseDetails={() => {
+                    setInternalActiveRowId(null);
+                    sidePanel?.onClose?.();
+                  }}
                 >
                   <div className={TABLE_SPLIT_VIEW_GENERIC_DETAIL_CLASSNAME}>
-                    {selectedItem ? (
+                    {activeItem && sidePanel ? (
+                      sidePanelChildren
+                    ) : selectedItem ? (
                       renderDetailPaneFields(selectedItem)
                     ) : (
                       <EmptyState
@@ -6195,7 +6210,7 @@ export function UnifiedTablePage<T>({
       <div
         className={lightTableThemeStyles.lightTheme}
         style={
-          isSidePanelOpen
+          isSidePanelOpen && !usesGenericSplitWorkspace
             ? ({
                 "--table-side-panel-reserved-width":
                   resolveTableSidePanelReservedWidth(
@@ -6223,11 +6238,12 @@ export function UnifiedTablePage<T>({
             pageShellOwnsTableLayout ? "pb-12" : TABLE_PAGE_LAUNCHER_CLEARANCE_CLASSNAME,
             canRenderSplitView && TABLE_SPLIT_VIEW_PAGE_CONTAINER_CLASSNAME,
             isFullBleedTable && TABLE_FULL_BLEED_PAGE_CONTAINER_CLASSNAME,
-            sidePanel && TABLE_SIDE_PANEL_PAGE_CONTAINER_CLASSNAME,
+            sidePanel && !usesGenericSplitWorkspace && TABLE_SIDE_PANEL_PAGE_CONTAINER_CLASSNAME,
             // Must come AFTER the side-panel gutter reset: `cn` is tailwind-merge,
             // which resolves a `pr` conflict by keeping the last class, so listing
             // the reservation first let "lg:pr-0" delete it outright.
             canRenderSplitView &&
+              !usesGenericSplitWorkspace &&
               sidePanel &&
               effectiveActiveRowId &&
               TABLE_SPLIT_VIEW_PANEL_RESERVATION_CLASSNAME,
@@ -6240,7 +6256,7 @@ export function UnifiedTablePage<T>({
             containerClassName,
           )}
         >
-          {sidePanel ? (
+          {sidePanel && !usesGenericSplitWorkspace ? (
             <>
               <div
                 className={cn(
@@ -6306,7 +6322,7 @@ export function UnifiedTablePage<T>({
       </div>
 
       {/* Mobile side panel overlay */}
-      {sidePanel && effectiveActiveRowId && isMobileViewport && (
+      {sidePanel && !usesGenericSplitWorkspace && effectiveActiveRowId && isMobileViewport && (
         <div className="md:hidden">
           <TableSidePanel
             mode="mobile"

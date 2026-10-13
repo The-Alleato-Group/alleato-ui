@@ -193,16 +193,16 @@ describe("portable unified table", () => {
     value.toolbar.filterQuery = { conjunction: "and", rules: [] };
     value.toolbar.onFilterQueryChange = vi.fn();
     mount(value);
-    fireEvent.click(screen.getByRole("button", { name: "View settings", exact: true }));
-    fireEvent.click(screen.getByRole("button", { name: "Filter", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "View settings" }));
+    fireEvent.click(screen.getByRole("button", { name: "Filter" }));
     fireEvent.click(screen.getByRole("button", { name: "Add filter rule" }));
     if (!clientSide) {
-      expect(screen.queryByRole("option", { name: "Status", exact: true })).toBeNull();
+      expect(screen.queryByRole("option", { name: "Status" })).toBeNull();
       expect(value.toolbar.onFilterQueryChange).not.toHaveBeenCalled();
       return;
     }
-    expect(screen.getByRole("option", { name: "Status", exact: true })).toBeTruthy();
-    fireEvent.click(screen.getByRole("option", { name: "Status", exact: true }));
+    expect(screen.getByRole("option", { name: "Status" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("option", { name: "Status" }));
     expect(value.toolbar.onFilterQueryChange).toHaveBeenCalledWith({ conjunction: "and", rules: [{ field: "status", operator: "is", values: [] }] });
   });
   it("isolates selection from row activation and respects row permissions", () => {
@@ -423,6 +423,91 @@ describe("portable unified table", () => {
     expect(document.querySelector("table thead [role=checkbox]")).toBeNull();
     fireEvent.click(checkbox);
     expect(selectAll).toHaveBeenCalledWith(true, ["b", "a"]);
+  });
+
+  it.each([null, "b"])("keeps configured details in one split workspace with active row %s", activeRowId => {
+    const value = props();
+    value.toolbar.currentView = "split";
+    value.table.activeRowId = activeRowId;
+    value.table.splitColumns = ["name", "status"];
+    value.tabs = [{ label: "Tables", href: "/records", isActive: true }, { label: "Figures", href: "/figures" }];
+    value.sidePanel = { title: "Record details", onClose: vi.fn(), body: activeRowId ? <input aria-label="Source review" /> : undefined };
+    mount(value);
+    expect(screen.getAllByRole("heading", { name: "Records" })).toHaveLength(1);
+    expect(screen.getAllByRole("navigation", { name: "Tabs" })).toHaveLength(1);
+    expect(screen.getAllByRole("radiogroup", { name: "Table views" })).toHaveLength(1);
+    expect(document.querySelectorAll("[data-split-page]")).toHaveLength(1);
+    expect(document.querySelectorAll("[data-split-page-pane=primary]")).toHaveLength(1);
+    expect(document.querySelectorAll("[data-split-page-pane=detail]")).toHaveLength(1);
+    if (activeRowId) {
+      expect(screen.getAllByRole("textbox", { name: "Source review" })).toHaveLength(1);
+      expect(document.querySelector("[data-split-page-pane=detail]")?.contains(screen.getByRole("textbox", { name: "Source review" }))).toBe(true);
+    }
+  });
+
+  it("preserves the split frame when selecting and closing a configured record", () => {
+    function Page() {
+      const [activeRowId, setActiveRowId] = React.useState<string | null>(null);
+      const value = props();
+      value.toolbar.currentView = "split";
+      value.table = { ...value.table, activeRowId, onRowClick: row => setActiveRowId(row.id) };
+      value.sidePanel = { title: "Record details", onClose: () => setActiveRowId(null), content: activeRowId ? <button onClick={() => setActiveRowId(null)}>Close record</button> : undefined };
+      return <UnifiedTablePage {...value} />;
+    }
+    render(<TooltipProvider><TableHostProvider host={makeHost()}><Page /></TableHostProvider></TooltipProvider>);
+    const frame = document.querySelector("[data-split-page]");
+    expect(frame).toBeTruthy();
+    fireEvent.click(within(document.querySelector("[data-split-page-pane=primary]") as HTMLElement).getByText("Bravo"));
+    expect(document.querySelector("[data-split-page]")).toBe(frame);
+    expect(screen.getAllByRole("heading", { name: "Records" })).toHaveLength(1);
+    fireEvent.click(screen.getByRole("button", { name: "Close record" }));
+    expect(document.querySelector("[data-split-page]")).toBe(frame);
+    expect(screen.queryByRole("button", { name: "Close record" })).toBeNull();
+  });
+
+  it("mounts configured mobile split content once inside the shared detail pane", () => {
+    vi.stubGlobal("matchMedia", vi.fn((query: string) => ({ matches: true, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+    const value = props();
+    value.toolbar.currentView = "split";
+    value.table.activeRowId = "b";
+    value.sidePanel = { title: "Record details", onClose: vi.fn(), content: <input aria-label="Mobile source review" /> };
+    mount(value);
+    const input = screen.getByRole("textbox", { name: "Mobile source review" });
+    expect(document.querySelector("[data-split-page-pane=detail]")?.contains(input)).toBe(true);
+    expect(screen.getAllByRole("textbox", { name: "Mobile source review" })).toHaveLength(1);
+    expect(screen.queryByRole("dialog")).toBeNull();
+  });
+
+  it("keeps normal table peek and its page toolbar outside the split workspace", () => {
+    const value = props();
+    value.toolbar.currentView = "table";
+    value.table.activeRowId = "b";
+    value.sidePanel = { title: "Record details", onClose: vi.fn(), content: <input aria-label="Peek source review" /> };
+    mount(value);
+    expect(document.querySelector("[data-split-page]")).toBeNull();
+    expect(screen.getAllByRole("heading", { name: "Records" })).toHaveLength(1);
+    expect(screen.getAllByRole("textbox", { name: "Peek source review" })).toHaveLength(1);
+    expect(screen.getByRole("button", { name: "Close details" })).toBeTruthy();
+  });
+
+  it("returns to the mobile list and reopens the same configured record", () => {
+    vi.stubGlobal("matchMedia", vi.fn((query: string) => ({ matches: true, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() })));
+    function Page() {
+      const [activeRowId, setActiveRowId] = React.useState<string | null>(null);
+      const value = props();
+      value.toolbar.currentView = "split";
+      value.table = { ...value.table, activeRowId, onRowClick: row => setActiveRowId(row.id) };
+      value.sidePanel = { title: "Record details", onClose: () => setActiveRowId(null), content: activeRowId ? <input aria-label="Selected source" /> : undefined };
+      return <UnifiedTablePage {...value} />;
+    }
+    render(<TooltipProvider><TableHostProvider host={makeHost()}><Page /></TableHostProvider></TooltipProvider>);
+    const primary = document.querySelector("[data-split-page-pane=primary]") as HTMLElement;
+    fireEvent.click(within(primary).getByText("Bravo"));
+    expect(screen.getByRole("textbox", { name: "Selected source" })).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Records" }));
+    expect(screen.queryByRole("textbox", { name: "Selected source" })).toBeNull();
+    fireEvent.click(within(primary).getByText("Bravo"));
+    expect(screen.getAllByRole("textbox", { name: "Selected source" })).toHaveLength(1);
   });
 });
 
