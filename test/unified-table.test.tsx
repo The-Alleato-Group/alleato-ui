@@ -14,8 +14,10 @@ import { ViewSwitcher } from "../src/tables/table-toolbar";
 import { PageTabs } from "../src/layout/page-tabs";
 import { TableHostProvider, type TableHost } from "../src/tables/table-host";
 import {
+  isEmptyDisplayValue,
   pruneSelectionToRows,
   resolveBulkDeleteTargets,
+  resolveDetailPaneColumns,
   UnifiedTablePage,
   type UnifiedTablePageProps,
   type TableColumn,
@@ -443,6 +445,31 @@ describe("portable unified table", () => {
       expect(screen.getAllByRole("textbox", { name: "Source review" })).toHaveLength(1);
       expect(document.querySelector("[data-split-page-pane=detail]")?.contains(screen.getByRole("textbox", { name: "Source review" }))).toBe(true);
     }
+  });
+
+  it("keeps empty read-only fields and opted-out columns out of the record pane", () => {
+    type PaneRow = { id: string; name: string; fee: string | null; sources: number };
+    const paneColumns: TableColumn<PaneRow>[] = [
+      { id: "name", label: "Project", showInDetailPane: false, displayValue: row => row.name, render: row => row.name },
+      { id: "fee", label: "Quoted design fee", displayValue: row => row.fee, render: row => row.fee },
+      { id: "sources", label: "Sources", showInDetailPane: false, displayValue: row => `${row.sources} sources`, render: row => `${row.sources} sources` },
+    ];
+    const row: PaneRow = { id: "u", name: "Uniqlo", fee: null, sources: 12 };
+    expect(resolveDetailPaneColumns(paneColumns, paneColumns).map(column => column.id)).toEqual(["fee"]);
+    expect(isEmptyDisplayValue(paneColumns[1]!, row)).toBe(true);
+    expect(isEmptyDisplayValue(paneColumns[1]!, { ...row, fee: "$7,000" })).toBe(false);
+    // A custom-rendered column cannot say it is empty, so it keeps its row.
+    expect(isEmptyDisplayValue({ id: "x", label: "Custom", render: () => null }, row)).toBe(false);
+  });
+
+  it("separates the pane body from the record fields", () => {
+    const value = props();
+    value.toolbar.currentView = "split";
+    value.table.activeRowId = "b";
+    value.table.splitColumns = ["name", "status"];
+    value.sidePanel = { title: "Record details", onClose: vi.fn(), body: <input aria-label="Evidence" /> };
+    mount(value);
+    expect(screen.getByRole("textbox", { name: "Evidence" }).parentElement?.classList.contains("mt-8")).toBe(true);
   });
 
   it("preserves the split frame when selecting and closing a configured record", () => {

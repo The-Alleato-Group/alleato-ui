@@ -881,7 +881,18 @@ export function resolveDetailPaneColumns<T>(
   const hidden = allColumns.filter(
     (column) => Boolean(column.label) && !seen.has(column.id),
   );
-  return [...visible, ...hidden];
+  return [...visible, ...hidden].filter(
+    (column) => column.showInDetailPane !== false,
+  );
+}
+
+export function isEmptyDisplayValue<T>(
+  column: TableColumn<T>,
+  item: T,
+): boolean {
+  if (!column.displayValue) return false;
+  const value = column.displayValue(item);
+  return value === null || value === undefined || String(value).trim() === "";
 }
 
 export function resolveGenericColumnText<T>(
@@ -1089,6 +1100,12 @@ export interface TableColumn<T> extends ColumnConfig {
    * numeric values, while review surfaces need human-readable text.
    */
   displayValue?: (item: T) => string | number | null | undefined;
+  /**
+   * Leave this column out of the row-click side panel and split detail pane.
+   * For a column that repeats what the pane already shows: the record name
+   * (the pane title) or a count of items listed in the pane body. Default true.
+   */
+  showInDetailPane?: boolean;
   csvValue?: (item: T) => string;
   /**
    * Leave this column out of the auto-built CSV when its csvValue is empty in
@@ -4549,6 +4566,11 @@ export function UnifiedTablePage<T>({
           Boolean(column.editValue);
         const isIconOnlyField =
           isEditableField && shouldUseIconOnlyInlineEdit(column);
+        // An unset read-only value renders nothing, label included (DESIGN.md
+        // §10). Only a column with `displayValue` can say it is empty; a
+        // custom-rendered column keeps its row. Editable fields stay mounted so
+        // the empty slot can be filled.
+        if (!isEditableField && isEmptyDisplayValue(column, item)) return null;
         return (
           <div
             key={column.id}
@@ -4587,7 +4609,16 @@ export function UnifiedTablePage<T>({
         : activeItem
           ? renderDetailPaneFields(activeItem)
           : null}
-      {sidePanel.body}
+      {/* The body is a new section after the fields: separate it by the
+          pane's section rhythm, not by the caller's own margin. */}
+      {sidePanel.body !== undefined &&
+      sidePanel.body !== null &&
+      sidePanel.content === undefined &&
+      activeItem ? (
+        <div className="mt-8">{sidePanel.body}</div>
+      ) : (
+        sidePanel.body
+      )}
     </>
   ) : null;
 
