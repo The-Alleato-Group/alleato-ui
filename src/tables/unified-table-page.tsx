@@ -3821,13 +3821,27 @@ export function UnifiedTablePage<T>({
     surface: InlineEditSurface,
   ): ReactNode => {
     const rowId = table.getRowId(item);
-    const isEditableCell =
+    const isEditableColumn =
       Boolean(resolvedFeatures.enableInlineEditing) &&
       Boolean(column.editable) &&
-      column.isEditable?.(item) !== false &&
       Boolean(column.editValue);
+    const isEditableCell =
+      isEditableColumn && column.isEditable?.(item) !== false;
     const isIconOnlyEdit =
       isEditableCell && shouldUseIconOnlyInlineEdit(column);
+    // A locked row in an editable column keeps the editable cells' frame:
+    // the same text size and the pencil's width reserved. Rendered bare, its
+    // value sat 22px right of every other price in the column and a size
+    // smaller (ASRS Unit price, 2026-10-14).
+    const isLockedTextCell =
+      isEditableColumn &&
+      !isEditableCell &&
+      !shouldUseIconOnlyInlineEdit(column);
+    const textCellAlignment = cn(
+      columnAlignment === "right" && "text-right",
+      columnAlignment === "center" && "text-center",
+      columnAlignment === "left" && "text-left",
+    );
     return editingCell?.rowId === rowId &&
       editingCell.columnId === column.id &&
       editingCell.surface === surface &&
@@ -3982,6 +3996,19 @@ export function UnifiedTablePage<T>({
           <Pencil className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50 opacity-0 transition-opacity group-hover/cell:opacity-100 group-focus-within/cell:opacity-100" />
         </Button>
       )
+    ) : isLockedTextCell ? (
+      <div
+        data-locked-cell="true"
+        className={cn(
+          "flex min-h-8 w-full min-w-0 items-center justify-between gap-2 border border-transparent text-sm",
+          textCellAlignment,
+        )}
+      >
+        <span className={cn("min-w-0 flex-1 truncate", textCellAlignment)}>
+          {column.render(item)}
+        </span>
+        <span aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
+      </div>
     ) : (
       column.render(item)
     );

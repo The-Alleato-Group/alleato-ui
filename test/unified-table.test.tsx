@@ -611,6 +611,39 @@ describe("draft price table behavior", () => {
     expect(trigger?.classList.contains("border-transparent")).toBe(true);
   });
 
+  it("keeps a locked row's value in the editable cells' frame so the column stays aligned", () => {
+    const value = props();
+    value.data.items = [records[0], { id: "locked", name: "Locked", status: "7" }];
+    value.table.columns = [
+      {
+        id: "price",
+        label: "Price",
+        align: "right",
+        render: (row) => row.status,
+        editable: true,
+        editValue: (row) => row.status,
+        isEditable: (row) => row.id !== "locked",
+      },
+    ];
+    const { container } = mount(value);
+
+    const trigger = screen
+      .getAllByRole("button", { name: "Edit Price" })
+      .find((button) => button.classList.contains("text-right"));
+    const locked = container.querySelector<HTMLElement>('[data-locked-cell="true"]');
+    expect(trigger).toBeTruthy();
+    expect(locked).toBeTruthy();
+    expect(locked?.textContent).toBe("7");
+    for (const shared of ["text-sm", "text-right", "justify-between", "gap-2", "min-h-8", "border"]) {
+      expect(locked?.classList.contains(shared)).toBe(true);
+      expect(trigger?.classList.contains(shared) || trigger?.className.includes(shared)).toBe(true);
+    }
+    // The pencil's width is reserved, so the value ends where editable values end.
+    const spacer = locked?.querySelector('[aria-hidden="true"]');
+    expect(spacer?.classList.contains("w-3.5")).toBe(true);
+    expect(within(locked!).queryByRole("button")).toBeNull();
+  });
+
   it("moves between visible editable rows, skips locked rows, and resets with Escape", async () => {
     const edit = vi.fn();
     const revert = vi.fn();
