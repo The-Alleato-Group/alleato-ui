@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { ChevronDown, MoreVertical, Plus } from "lucide-react";
 
 import {
@@ -62,22 +63,35 @@ export interface TablePageActionsProps {
   className?: string;
 }
 
+/** An enabled item with an href navigates; a disabled one never links. */
+function itemHref(item: TablePageActionItem): string | null {
+  return item.href && !item.disabled ? item.href : null;
+}
+
 function renderItem(item: TablePageActionItem, key: string): ReactNode {
-  return (
-    <DropdownMenuItem
-      key={key}
-      disabled={item.disabled}
-      onClick={item.onClick}
-      className={cn(
-        item.destructive && "text-destructive focus:text-destructive",
-      )}
-    >
+  const href = itemHref(item);
+  const content = (
+    <>
       {item.icon ? (
         <span className="mr-2 flex h-4 w-4 items-center justify-center">
           {item.icon}
         </span>
       ) : null}
       {item.label}
+    </>
+  );
+  return (
+    <DropdownMenuItem
+      key={key}
+      asChild={href !== null}
+      disabled={item.disabled}
+      onClick={item.onClick}
+      data-testid={item.testId}
+      className={cn(
+        item.destructive && "text-destructive focus:text-destructive",
+      )}
+    >
+      {href !== null ? <Link href={href}>{content}</Link> : content}
     </DropdownMenuItem>
   );
 }
@@ -115,6 +129,19 @@ export function TablePageActions({
   if (!hasAdd && !hasMore) return null;
 
   const singleAdd = hasAdd && addOptions!.length === 1 ? addOptions![0] : null;
+  const singleAddHref = singleAdd ? itemHref(singleAdd) : null;
+  const singleAddContent = singleAdd ? (
+    <>
+      {singleAdd.icon ? (
+        <span className="flex h-4 w-4 items-center justify-center xl:hidden" aria-hidden>
+          {singleAdd.icon}
+        </span>
+      ) : (
+        <Plus className="h-4 w-4 xl:hidden" aria-hidden />
+      )}
+      <span className="hidden xl:inline">{buttonLabel}</span>
+    </>
+  ) : null;
 
   return (
     <div className={cn("flex items-center gap-1.5", className)}>
@@ -124,22 +151,21 @@ export function TablePageActions({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
+                {/* An href option is a link: a button with no onClick did nothing. */}
                 <Button
+                  asChild={singleAddHref !== null}
                   data-keep-text
                   data-testid={singleAdd.testId ?? testId}
                   className={ADD_BUTTON_CLASSNAME}
                   onClick={singleAdd.onClick}
                   aria-label={singleAdd.label}
-                  disabled={singleAdd.disabled}
+                  disabled={singleAddHref === null ? singleAdd.disabled : undefined}
                 >
-                  {singleAdd.icon ? (
-                    <span className="flex h-4 w-4 items-center justify-center xl:hidden" aria-hidden>
-                      {singleAdd.icon}
-                    </span>
+                  {singleAddHref !== null ? (
+                    <Link href={singleAddHref}>{singleAddContent}</Link>
                   ) : (
-                    <Plus className="h-4 w-4 xl:hidden" aria-hidden />
+                    singleAddContent
                   )}
-                  <span className="hidden xl:inline">{buttonLabel}</span>
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{singleAdd.label}</TooltipContent>
