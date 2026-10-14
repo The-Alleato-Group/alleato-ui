@@ -3,6 +3,7 @@
 import * as React from "react"
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { cn } from "../lib/utils"
+import { actionRowClassName } from "./action-row"
 import { cva, type VariantProps } from "class-variance-authority"
 import { dialogOverlayMotion } from "./dialog-motion"
 import { DialogContent } from "./dialog"
@@ -95,7 +96,7 @@ const ModalFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      actionRowClassName,
       className
     )}
     {...props}

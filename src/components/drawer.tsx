@@ -4,6 +4,7 @@ import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "../lib/utils";
+import { actionRowClassName } from "./action-row";
 
 function Drawer({
   ...props
@@ -106,7 +107,7 @@ function DrawerFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="drawer-footer"
-      className={cn("mt-auto flex flex-col gap-2 p-4", className)}
+      className={cn("mt-auto p-4", actionRowClassName, className)}
       {...props}
     />
   );

@@ -4,6 +4,7 @@ import * as React from "react";
 import * as AlertDialogPrimitive from "@radix-ui/react-alert-dialog";
 
 import { cn } from "../lib/utils";
+import { actionRowClassName } from "./action-row";
 import { buttonVariants } from "./button";
 import { dialogContentMotion, dialogOverlayMotion } from "./dialog-motion";
 
@@ -68,7 +69,7 @@ const AlertDialogFooter = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cn(
-      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+      actionRowClassName,
       className,
     )}
     {...props}

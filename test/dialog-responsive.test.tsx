@@ -103,3 +103,24 @@ it("left-aligns shared dialog and sheet headings by default", () => {
     expect(classes).not.toContain("text-center");
   }
 });
+
+// Phone dialogs never stack their actions (project-management DESIGN.md: a
+// form's actions are one compact row, tertiary -> primary, right-aligned).
+describe("dialog action footers stay one row on a phone", () => {
+  it.each([
+    ["DialogFooter", () => import("../src/components/dialog").then((m) => m.DialogFooter)],
+    ["AlertDialogFooter", () => import("../src/components/alert-dialog").then((m) => m.AlertDialogFooter)],
+    ["ModalFooter", () => import("../src/components/unified-modal").then((m) => m.ModalFooter)],
+    ["DrawerFooter", () => import("../src/components/drawer").then((m) => m.DrawerFooter)],
+  ])("%s renders a right-aligned row with touch-sized buttons", async (_name, load) => {
+    viewport(390);
+    const Footer = (await load()) as React.ComponentType<React.HTMLAttributes<HTMLDivElement>>;
+    render(<Footer data-testid="footer"><button>Cancel</button><button>Save</button></Footer>);
+    const footer = screen.getByTestId("footer");
+    expect(footer.className).toMatch(/\bflex-row\b/);
+    expect(footer.className).toMatch(/\bjustify-end\b/);
+    expect(footer.className).not.toMatch(/\bflex-col(-reverse)?\b/);
+    expect(footer.className).toContain("[&_[data-slot=button]]:min-h-11");
+    cleanup();
+  });
+});

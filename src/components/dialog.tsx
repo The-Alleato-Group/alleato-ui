@@ -5,6 +5,7 @@ import { XIcon } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 
 import { cn } from "../lib/utils";
+import { actionRowClassName } from "./action-row";
 import { Button } from "./button";
 import { SheetContent } from "./sheet";
 import { useIsMobile } from "../hooks/use-mobile";
@@ -141,7 +142,7 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end [&_[data-slot=button]]:min-h-11 xl:[&_[data-slot=button]]:min-h-9",
+        actionRowClassName,
         className,
       )}
       {...props}
