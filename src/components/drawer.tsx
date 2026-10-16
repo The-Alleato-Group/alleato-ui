@@ -5,6 +5,7 @@ import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "../lib/utils";
 import { actionRowClassName } from "./action-row";
+import { phoneSheetViewport, useSheetOpening } from "../hooks/use-sheet-opening";
 
 function Drawer({
   ...props
@@ -55,12 +56,17 @@ function DrawerContent({
   className,
   contentClassName,
   children,
+  onOpenAutoFocus,
+  ref,
   ...props
 }: DrawerContentProps) {
+  const opening = useSheetOpening(onOpenAutoFocus, ref);
   return (
     <DrawerPortal data-slot="drawer-portal">
       <DrawerOverlay />
       <DrawerPrimitive.Content
+        ref={opening.ref}
+        onOpenAutoFocus={opening.onOpenAutoFocus}
         data-slot="drawer-content"
         className={cn(
           "group/drawer-content bg-background fixed z-50 flex h-auto flex-col",
@@ -69,6 +75,8 @@ function DrawerContent({
           "data-[vaul-drawer-direction=right]:inset-y-0 data-[vaul-drawer-direction=right]:right-0 data-[vaul-drawer-direction=right]:w-3/4 data-[vaul-drawer-direction=right]:border-l data-[vaul-drawer-direction=right]:sm:max-w-sm",
           "data-[vaul-drawer-direction=left]:inset-y-0 data-[vaul-drawer-direction=left]:left-0 data-[vaul-drawer-direction=left]:w-3/4 data-[vaul-drawer-direction=left]:border-r data-[vaul-drawer-direction=left]:sm:max-w-sm",
           className,
+          phoneSheetViewport,
+          "max-md:data-[vaul-drawer-direction=top]:bottom-auto max-md:data-[vaul-drawer-direction=top]:top-[calc(var(--sheet-viewport-top,0px)+max(1rem,env(safe-area-inset-top)))]",
         )}
         {...props}
       >
@@ -76,7 +84,7 @@ function DrawerContent({
         <div
           data-slot="drawer-inner"
           className={cn(
-            "w-full",
+            "min-h-0 w-full overflow-y-auto overscroll-contain",
             // Constrain readable line-length for top/bottom drawers.
             "group-data-[vaul-drawer-direction=top]/drawer-content:mx-auto group-data-[vaul-drawer-direction=top]/drawer-content:max-w-3xl",
             "group-data-[vaul-drawer-direction=bottom]/drawer-content:mx-auto group-data-[vaul-drawer-direction=bottom]/drawer-content:max-w-3xl",

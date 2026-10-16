@@ -5,6 +5,7 @@ import * as SheetPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 
 import { cn } from "../lib/utils"
+import { phoneSheetViewport, useSheetOpening } from "../hooks/use-sheet-opening"
 
 function Sheet({ ...props }: React.ComponentProps<typeof SheetPrimitive.Root>) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -51,6 +52,8 @@ function SheetContent({
   showCloseButton = true,
   showOverlay = true,
   overlayClassName,
+  onOpenAutoFocus,
+  ref,
   ...props
 }: React.ComponentProps<typeof SheetPrimitive.Content> & {
   side?: "top" | "right" | "bottom" | "left"
@@ -60,10 +63,13 @@ function SheetContent({
    *  it mounted: the overlay is what makes a tap outside the panel close it. */
   overlayClassName?: string
 }) {
+  const opening = useSheetOpening(onOpenAutoFocus, ref)
   return (
     <SheetPortal>
       {showOverlay && <SheetOverlay className={overlayClassName} />}
       <SheetPrimitive.Content
+        ref={opening.ref}
+        onOpenAutoFocus={opening.onOpenAutoFocus}
         data-slot="sheet-content"
         className={cn(
           "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-4 overflow-y-auto shadow-sm transition-[transform,opacity] ease-[cubic-bezier(0.22,1,0.36,1)] data-[state=closed]:duration-[250ms] data-[state=open]:duration-[400ms]",
@@ -88,6 +94,10 @@ function SheetContent({
             "data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b",
           side === "bottom" &&
             "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t",
+          phoneSheetViewport,
+          side === "top" && "max-md:bottom-auto max-md:top-[calc(var(--sheet-viewport-top,0px)+max(1rem,env(safe-area-inset-top)))]",
+          (side === "right" || side === "left") && "max-md:top-auto max-md:h-[calc(var(--sheet-viewport-height,100dvh)-max(1rem,env(safe-area-inset-top)))] max-md:rounded-t-2xl",
+          "overscroll-contain",
           className
         )}
         {...props}
