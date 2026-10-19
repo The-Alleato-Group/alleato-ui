@@ -15,7 +15,8 @@ import {
 // ---------------------------------------------------------------------------
 // ExpandingSearch — THE search pattern for this codebase.
 //
-// Renders as a Search icon. Click → expands to an input. ESC clears and
+// Renders as a Search icon. Hover reveals the input without stealing focus;
+// click or keyboard activation expands and focuses it. ESC clears and
 // collapses; blur-while-empty collapses. This is the ONLY permitted search
 // input in pages, tables and detail views. Raw <Input placeholder="Search...">
 // is banned by ESLint (design-system/no-raw-search-input).
@@ -103,6 +104,7 @@ export function ExpandingSearch({
               type="button"
               variant="ghost"
               size="icon"
+              onPointerEnter={(event) => { if (event.pointerType === "mouse") setExpanded(true); }}
               onClick={expand}
               aria-label={ariaLabel}
               className={cn("size-11 text-muted-foreground sm:size-8", triggerClassName, className)}
@@ -117,7 +119,8 @@ export function ExpandingSearch({
   }
 
   return (
-    <div className={cn("relative flex items-center", className)}>
+    <div className={cn("relative flex items-center", className)}
+      onPointerLeave={() => { if (document.activeElement !== inputRef.current) collapse(); }}>
       <div className="relative flex w-full items-center animate-in slide-in-from-left-2 duration-200">
         <Search className="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-muted-foreground" />
         <Input
