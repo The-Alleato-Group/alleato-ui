@@ -61,6 +61,9 @@ describe.each(["DialogContent", "ModalContent"])("%s presentation and accessibil
     expect(dialog.getAttribute("data-presentation")).toBeNull();
     expect(dialog.className).toContain("top-[50%]");
     expect(dialog.className).not.toContain("slide-in-from-bottom");
+    expect(dialog.className).toContain("max-h-[calc(100dvh-2rem)]");
+    expect(dialog.className).toContain("overflow-y-auto");
+    expect(dialog.className).toContain("overscroll-contain");
   });
   it("preserves Escape handling, controlled dismissal and trigger focus", async () => {
     const onEscape = vi.fn(); render(<Editor onEscapeKeyDown={onEscape} />);
@@ -75,6 +78,23 @@ describe.each(["DialogContent", "ModalContent"])("%s presentation and accessibil
     render(<Editor showCloseButton={false} />); await openEditor();
     expect(screen.queryByRole("button", { name: "Close" })).toBeNull();
   });
+});
+
+it("contains long desktop content at the shared owner while preserving its close action", async () => {
+  viewport(1280);
+  render(<ResponsiveDialog defaultOpen>
+    <ResponsiveDialogContent size="wide">
+      <ResponsiveDialogTitle>Long decision journey</ResponsiveDialogTitle>
+      <ResponsiveDialogDescription>Review every applicable source.</ResponsiveDialogDescription>
+      <div style={{ height: 1400 }}>Last source condition</div>
+    </ResponsiveDialogContent>
+  </ResponsiveDialog>);
+  const dialog = await screen.findByRole("dialog", { name: "Long decision journey" });
+  expect(dialog.className).toContain("max-h-[calc(100dvh-2rem)]");
+  expect(dialog.className).toContain("overflow-y-auto");
+  expect(dialog.textContent).toContain("Last source condition");
+  fireEvent.click(screen.getByRole("button", { name: "Close" }));
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
 });
 
 
