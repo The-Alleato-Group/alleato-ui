@@ -37,17 +37,17 @@ it("reveals on mouse hover without taking keyboard focus, then collapses when le
   render(<><button>Other action</button><EmptySearchFixture /></>);
   const other = screen.getByRole("button", { name: "Other action" });
   other.focus();
-  pointerEnter(screen.getByRole("button", { name: "Search", exact: true }), "mouse");
+  pointerEnter(screen.getByRole("button", { name: /^Search$/ }), "mouse");
   const input = screen.getByRole("textbox", { name: "Search" });
   expect(document.activeElement).toBe(other);
   fireEvent.pointerLeave(input.parentElement!.parentElement!);
   expect(screen.queryByRole("textbox")).toBeNull();
-  expect(screen.getByRole("button", { name: "Search", exact: true })).toBeDefined();
+  expect(screen.getByRole("button", { name: /^Search$/ })).toBeDefined();
 });
 
 it("retains a hover-open search while typing and keeps touch and keyboard click activation", async () => {
   render(<EmptySearchFixture />);
-  const trigger = screen.getByRole("button", { name: "Search", exact: true });
+  const trigger = screen.getByRole("button", { name: /^Search$/ });
   pointerEnter(trigger, "touch");
   expect(screen.queryByRole("textbox")).toBeNull();
   fireEvent.click(trigger, { detail: 0 });
