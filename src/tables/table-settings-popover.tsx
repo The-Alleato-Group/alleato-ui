@@ -32,7 +32,7 @@ export function TableSettingsPopover({
   trigger,
   tooltip,
   title = "View settings",
-  align = "end",
+  align = "start",
   open,
   onOpenChange,
   children,
