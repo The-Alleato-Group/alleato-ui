@@ -880,3 +880,42 @@ describe("table pagination footer", () => {
     expect(screen.getByRole("navigation", { name: "Pagination" }).textContent).toContain("26–50 of 61");
   });
 });
+
+ it("reports the actual ordered visible rows and server pagination to external readers", () => {
+  const callback = vi.fn();
+  const value = props();
+  value.data = { ...value.data, onVisibleItemsChange: callback, isFetching: false };
+  value.pagination = { page: 2, perPage: 2, totalPages: 3, totalItems: 6, onPageChange: vi.fn(), onPerPageChange: vi.fn() };
+  mount(value);
+  expect(callback).toHaveBeenLastCalledWith(expect.arrayContaining(records), expect.objectContaining({offset: 2, page: 2, totalItems: 6, continuous: false, isFetching: false}));
+ });
+
+it("reports retained earlier rows after a server scroll page arrives, without publishing it as ready early", () => {
+  vi.stubGlobal("IntersectionObserver", class { observe() {} disconnect() {} });
+  const callback = vi.fn();
+  const host = makeHost();
+  host.readUnifiedTablePreferences = () => ({ paginationBehavior: "scroll" });
+  const value = props();
+  value.data = { ...value.data, onVisibleItemsChange: callback, isFetching: false };
+  value.pagination = { page: 1, perPage: 2, totalPages: 3, totalItems: 6, onPageChange: vi.fn(), onPerPageChange: vi.fn() };
+  const view = mount(value, host);
+  const next = { id: "c", name: "Charlie", status: "Draft" };
+  const updated = { ...value, data: { ...value.data, items: [next] }, pagination: { ...value.pagination, page: 2 } };
+  view.rerender(<TooltipProvider><TableHostProvider host={host}><UnifiedTablePage {...updated} /></TableHostProvider></TooltipProvider>);
+  expect(callback).toHaveBeenLastCalledWith(expect.arrayContaining([...records, next]), expect.objectContaining({offset: 0, page: 2, continuous: true, isFetching: false}));
+  const readyPageTwo = callback.mock.calls.filter(([, state]) => state.page === 2 && !state.isFetching);
+  expect(readyPageTwo.every(([items]) => items.some((item: RecordRow) => item.id === "c"))).toBe(true);
+  view.unmount();
+  vi.unstubAllGlobals();
+});
+
+it("keeps a newly requested server page pending while the prior page rows remain", () => {
+  const callback = vi.fn();
+  const host = makeHost();
+  const value = props();
+  value.data = { ...value.data, onVisibleItemsChange: callback, isFetching: false };
+  value.pagination = { page: 1, perPage: 2, totalPages: 3, totalItems: 6, onPageChange: vi.fn(), onPerPageChange: vi.fn() };
+  const view = mount(value, host);
+  view.rerender(<TooltipProvider><TableHostProvider host={host}><UnifiedTablePage {...value} pagination={{...value.pagination, page: 2}} /></TableHostProvider></TooltipProvider>);
+  expect(callback).toHaveBeenLastCalledWith(expect.any(Array), expect.objectContaining({page: 2, isFetching: true}));
+});
