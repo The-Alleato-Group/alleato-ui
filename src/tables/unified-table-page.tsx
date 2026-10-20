@@ -4606,6 +4606,10 @@ export function UnifiedTablePage<T>({
 
   const splitWorkspaceRailHeader = usesGenericSplitWorkspace ? (
     <SplitPageWorkspaceRailHeader
+      // In split view this rail replaces the page header, so it carries the
+      // page's one h1 whenever the page header would have (DESIGN.md: one
+      // PageTitle per page).
+      headingLevel={shouldRenderHeader ? 1 : 2}
       title={
         <>
           {header.title}
@@ -6323,10 +6327,13 @@ export function UnifiedTablePage<T>({
     </>
   );
 
-  // For non-sidePanel pages, combine header + table into one block
+  // For non-sidePanel pages, combine header + table into one block. The split
+  // workspace's rail header replaces the page header, but that rail only
+  // renders with rows: an empty, loading, or failed split view keeps the page
+  // header, or the page loses its title and h1 (/ai/approvals, 2026-10-20).
   const leftPaneContent = (
     <>
-      {!usesGenericSplitWorkspace ? aboveTableContent : null}
+      {!(usesGenericSplitWorkspace && showTable) ? aboveTableContent : null}
       <div
         className={
           canRenderSplitView ? "flex flex-col flex-1 min-h-0" : undefined
