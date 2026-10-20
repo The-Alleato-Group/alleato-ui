@@ -300,11 +300,11 @@ function Sidebar({
             : "group-data-[collapsible=icon]:w-[var(--sidebar-width-icon)]",
         )}
       />
-      {/* Sidebar container: expands to full width on hover-expand (overlays content) */}
+      {/* Navigation overlays page content on hover, while staying below shared modal layers. */}
       <div
         data-slot="sidebar-container"
         className={cn(
-          "fixed inset-y-0 z-[100] hidden h-svh w-[var(--sidebar-width)] transition-[left,right,width] duration-300 ease-in-out md:flex",
+          "fixed inset-y-0 z-40 hidden h-svh w-[var(--sidebar-width)] transition-[left,right,width] duration-300 ease-in-out md:flex",
           side === "left"
             ? "left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]"
             : "right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]",
@@ -321,7 +321,7 @@ function Sidebar({
                   : "shadow-[var(--shadow-edge-inverse)]",
               ),
           // Hover-expand: container goes to full width while gap stays at icon width
-          "group-data-[hover-expanded=true]:w-[var(--sidebar-width)] group-data-[hover-expanded=true]:z-[110]",
+          "group-data-[hover-expanded=true]:w-[var(--sidebar-width)] group-data-[hover-expanded=true]:z-[45]",
           // ...but while it peeks it leaves the layout and floats OVER the page,
           // and the resting edge is tuned to be almost invisible on purpose, so
           // the overlay had no discernible boundary -- you could not see where

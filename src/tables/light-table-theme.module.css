@@ -7,6 +7,12 @@
  * Keep these values aligned with the Snow theme in app/globals.css.
  */
 .lightTheme {
+  /* Preserve the table page flex/scroll boundary while remapping its tokens. */
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
   color-scheme: light;
   /* The tokens below only re-map variables; `color` itself is inherited as
    * the already-computed body color, so in dark mode any descendant without
