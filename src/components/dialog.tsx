@@ -83,7 +83,11 @@ function DialogContent({
       <SheetContent
         side="bottom"
         showCloseButton={showCloseButton}
-        className={cn(className, "max-h-[90dvh] w-full max-w-none rounded-t-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] motion-reduce:animate-none")}
+        className={cn(className, "max-h-[90dvh] w-full max-w-none rounded-t-2xl p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] motion-reduce:animate-none",
+          // Readers need a definite flex height so content scrolls inside the
+          // sheet instead of carrying persistent controls out of view.
+          size === "fullscreen" && "h-[calc(var(--sheet-viewport-height,100dvh)-max(1rem,env(safe-area-inset-top)))]",
+        )}
         {...props}
         data-slot="dialog-content"
         data-presentation="bottom-sheet"

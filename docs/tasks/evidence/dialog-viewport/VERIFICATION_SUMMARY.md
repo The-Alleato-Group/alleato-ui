@@ -19,3 +19,9 @@ Desktop DialogContent now has a viewport-relative maximum height with internal v
 Candidate version:v0.6.28. Independent code review and application viewport proof are owned by the coordinating FM journey task; immutable release publication and consumer adoption are separate boundaries. This record does not claim that a consuming application is deployed.
 
 Independent review by the FM integration adapter reviewer passed with no actionable code defect for the dialog/test/version delta atop a39ef381. Reviewed dialog SHA-256:`cea3c5b6c8ec29a17410f4eb34962429c73973d9ce45a0962ed45f345deebe37`. Browser geometry remains a separate runtime check.
+
+## Fullscreen phone reader correction (2026-10-20)
+
+Authenticated project1408 Documents at390×844 reproduced a separate phone sizing defect: the mobile branch discarded size=fullscreen. The sheet capped at828px, but its percentage-height reader grew to1746px because the flex parent's height was indefinite. Paging scrolled the hidden sheet to1089px and moved its title/controls above the viewport.
+
+Fullscreen phone dialogs now receive a definite height from the same visual-viewport variables as SheetContent. Other dialog sizes retain automatic content height; keyboard/safe-area/desktop behavior continues through the existing shared owner. The focused regression fails before the fix and passes afterward; exact class-token assertion avoids confusing max-height with height. Dialog responsiveness and sheet-opening suites pass31 tests. No new browser/server or full local build was started. Candidatev0.6.32; controlled consumer runtime proof and independent source review precede release acceptance.
