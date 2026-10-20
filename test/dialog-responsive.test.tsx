@@ -42,6 +42,17 @@ async function openEditor() {
 afterEach(cleanup);
 beforeEach(() => viewport(390));
 
+it("preserves a definite viewport height for fullscreen phone readers", () => {
+  render(<Dialog open><DialogContent size="fullscreen" className="flex flex-col overflow-hidden">
+    <DialogTitle>File reader</DialogTitle>
+    <DialogDescription>Scrollable file with persistent controls.</DialogDescription>
+    <div className="min-h-0 flex-1">File content</div>
+  </DialogContent></Dialog>);
+  const reader = screen.getByRole("dialog", { name: "File reader" });
+  expect(reader.className.split(" ")).toContain("h-[calc(var(--sheet-viewport-height,100dvh)-max(1rem,env(safe-area-inset-top)))]");
+  expect(reader.className).toContain("overflow-hidden");
+});
+
 describe.each(["DialogContent", "ModalContent"])("%s presentation and accessibility", (entry) => {
   beforeEach(() => { modal = entry === "ModalContent"; });
   it.each([375, 390, 414])("uses the canonical bottom sheet at %ipx with forwarded content props", async (width) => {
@@ -51,6 +62,7 @@ describe.each(["DialogContent", "ModalContent"])("%s presentation and accessibil
     expect(dialog.className).toContain("slide-in-from-bottom");
     expect(dialog.className).toContain("bottom-0");
     expect(dialog.className).not.toContain("top-[50%]");
+    expect(dialog.className.split(" ")).not.toContain("h-[calc(var(--sheet-viewport-height,100dvh)-max(1rem,env(safe-area-inset-top)))]");
     expect(dialog.getAttribute("data-testid")).toBe("editor");
     expect(screen.getByRole("button", { name: "Close" }).className).toContain("size-11");
     expect(screen.getByRole("textbox", { name: "Owner" })).toBeTruthy();
