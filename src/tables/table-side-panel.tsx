@@ -52,6 +52,8 @@ export interface TableSidePanelProps {
   onClose?: () => void;
   onToggleCollapsed?: () => void;
   onResizeStart?: React.MouseEventHandler<HTMLDivElement>;
+  /** Reading workspaces stay open while the user interacts with their file list. */
+  dismissOnOutsideClick?: boolean;
 }
 
 /**
@@ -75,6 +77,7 @@ export function TableSidePanel({
   onClose,
   onToggleCollapsed,
   onResizeStart,
+  dismissOnOutsideClick = true,
 }: TableSidePanelProps): React.ReactElement {
   const isMobile = mode === "mobile";
   const canCollapse = !isMobile && collapsible && Boolean(onToggleCollapsed);
@@ -86,7 +89,7 @@ export function TableSidePanel({
   // 2026-09-12). Inline split panes and the mobile sheet keep their own
   // dismissal: the sheet has an overlay, the split pane is part of the layout.
   const closeOnOutsideClick =
-    mode === "overlay" && !collapsed && Boolean(onClose);
+    mode === "overlay" && !collapsed && Boolean(onClose) && dismissOnOutsideClick;
   React.useEffect(() => {
     if (!closeOnOutsideClick || !onClose) return;
     const handlePointerDown = (event: PointerEvent) => {

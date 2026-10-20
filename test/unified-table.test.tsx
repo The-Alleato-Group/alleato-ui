@@ -105,6 +105,18 @@ function mount(value = props(), host = makeHost()) {
     </TooltipProvider>,
   );
 }
+it("reserves a split reader's width for the grid without reserving its header twice", () => {
+  const value = props();
+  value.table.activeRowId = "b";
+  value.sidePanel = { presentation: "split", title: "Reader", content: <div>File content</div> };
+  const view = mount(value);
+  const reservation = "md:pr-[var(--table-side-panel-reserved-width)]";
+  const reserved = [...view.container.querySelectorAll("div")].filter((node) => node.classList.contains(reservation));
+  expect(reserved).toHaveLength(1);
+  expect(reserved[0].contains(screen.getByRole("table"))).toBe(true);
+  expect(reserved[0].contains(screen.getByRole("heading", { name: "Records" }))).toBe(true);
+  expect([...view.container.querySelectorAll("div")].some((node) => node.classList.contains("md:pr-[calc(var(--table-side-panel-reserved-width)_+_1.5rem)]"))).toBe(false);
+});
 beforeEach(() => {
   window.localStorage.clear();
   Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {

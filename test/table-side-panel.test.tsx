@@ -1,7 +1,15 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { TableSidePanel } from "../src/tables/table-side-panel";
 
 describe("TableSidePanel viewport height", () => {
+  it("keeps a reading workspace open when the user interacts with the file list", () => {
+    const close = vi.fn();
+    render(<><button>File list</button><TableSidePanel title="Preview" onClose={close} dismissOnOutsideClick={false}>Document content</TableSidePanel></>);
+    fireEvent.pointerDown(screen.getByRole("button", { name: "File list" }));
+    expect(close).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Close details" }));
+    expect(close).toHaveBeenCalledOnce();
+  });
   it("fills the viewport for a desktop overlay", () => {
     render(<TableSidePanel title="Record details">Details</TableSidePanel>);
 
