@@ -1480,7 +1480,9 @@ export interface UnifiedTablePageProps<T> {
     isLoading: boolean;
     isFetching?: boolean;
     error?: Error | null;
-    /** Exact ordered rows available for reading, including retained scroll pages. */
+    /** Exact ordered rows available for reading, including retained scroll pages.
+     * Hosts must memoize row objects: preserve identity until values change,
+     * as with data.items itself, when this callback updates host state. */
     onVisibleItemsChange?: (items: T[], state: {
       offset: number;
       page: number;
@@ -3133,8 +3135,8 @@ export function UnifiedTablePage<T>({
     if (!state.isFetching) settledVisibleServerPage.current = { page: activePage, items: data.items };
     const key = JSON.stringify(state);
     const previous = lastReportedVisibleItems.current;
-    // Hosts may recreate table callbacks/arrays on every render. Report semantic
-    // row changes, not new array identities, to avoid parent/child effect loops.
+    // Ignore wrapper-array/callback recreation. Rows follow the documented
+    // stable-object contract; in-place mutation is not a supported data update.
     if (previous?.key === key && previous.items.length === paginatedItems.length &&
       previous.items.every((item, index) => item === paginatedItems[index])) return;
     lastReportedVisibleItems.current = { items: paginatedItems, key };
