@@ -1480,6 +1480,18 @@ export interface UnifiedTablePageProps<T> {
     isLoading: boolean;
     isFetching?: boolean;
     error?: Error | null;
+    /** Exact ordered rows available for reading, including retained scroll pages.
+     * Hosts must memoize row objects: preserve identity until values change,
+     * as with data.items itself, when this callback updates host state. */
+    onVisibleItemsChange?: (items: T[], state: {
+      offset: number;
+      page: number;
+      perPage: number;
+      totalPages: number;
+      totalItems: number;
+      continuous: boolean;
+      isFetching: boolean;
+    }) => void;
   };
   table: {
     columns: TableColumn<T>[];
@@ -3097,6 +3109,40 @@ export function UnifiedTablePage<T>({
     activePerPage,
     rowOrderedItems,
   ]);
+
+  const visibleItemsCallback = React.useRef(data.onVisibleItemsChange);
+  visibleItemsCallback.current = data.onVisibleItemsChange;
+  const lastReportedVisibleItems = React.useRef<{ items: T[]; key: string } | null>(null);
+  const settledVisibleServerPage = React.useRef<{ page: number; items: T[] } | null>(null);
+  const visibleTotal = pagination?.totalItems ?? toolbar.filteredItems ?? rowOrderedItems.length;
+  const retainedItems = React.useMemo(() => new Set(loadedServerItems), [loadedServerItems]);
+  const isVisiblePagePending = shouldContinuouslyLoad && !shouldClientPaginate && activePage > 1 &&
+    data.items.some((item) => !retainedItems.has(item));
+  React.useEffect(() => {
+    if (!visibleItemsCallback.current) return;
+    const settled = settledVisibleServerPage.current;
+    const awaitingServerPage = Boolean(pagination && !shouldClientPaginate && settled &&
+      settled.page !== activePage && settled.items === data.items);
+    const state = {
+      offset: shouldContinuouslyLoad ? 0 : (activePage - 1) * activePerPage,
+      page: activePage,
+      perPage: activePerPage,
+      totalPages: pagination?.totalPages ?? Math.max(1, Math.ceil(visibleTotal / activePerPage)),
+      totalItems: visibleTotal,
+      continuous: shouldContinuouslyLoad,
+      isFetching: data.isLoading || data.isFetching === true || isVisiblePagePending || awaitingServerPage,
+    };
+    if (!state.isFetching) settledVisibleServerPage.current = { page: activePage, items: data.items };
+    const key = JSON.stringify(state);
+    const previous = lastReportedVisibleItems.current;
+    // Ignore wrapper-array/callback recreation. Rows follow the documented
+    // stable-object contract; in-place mutation is not a supported data update.
+    if (previous?.key === key && previous.items.length === paginatedItems.length &&
+      previous.items.every((item, index) => item === paginatedItems[index])) return;
+    lastReportedVisibleItems.current = { items: paginatedItems, key };
+    visibleItemsCallback.current(paginatedItems, state);
+  }, [activePage, activePerPage, data.isFetching, data.isLoading, paginatedItems,
+    pagination?.totalPages, shouldContinuouslyLoad, visibleTotal, isVisiblePagePending, data.items, shouldClientPaginate, Boolean(pagination)]);
 
   type RenderEntry =
     | {
