@@ -116,6 +116,11 @@ type SplitPageWorkspaceRailHeaderProps = {
   children?: React.ReactNode;
   className?: string;
   titleClassName?: string;
+  /**
+   * 1 when this header names the page (a table page in split view owns the
+   * page title, so its one h1 lives here); 2 for a pane inside a page.
+   */
+  headingLevel?: 1 | 2;
 };
 
 /**
@@ -133,7 +138,9 @@ export function SplitPageWorkspaceRailHeader({
   children,
   className,
   titleClassName,
+  headingLevel = 2,
 }: SplitPageWorkspaceRailHeaderProps) {
+  const TitleHeading = headingLevel === 1 ? "h1" : "h2";
   return (
     <header
       className={cn("shrink-0 border-b border-border/70 px-5 py-4", className)}
@@ -153,14 +160,14 @@ export function SplitPageWorkspaceRailHeader({
                 <SelectionCheckbox {...selection} />
               </label>
             ) : null}
-            <h2
+            <TitleHeading
               className={cn(
                 "min-w-0 truncate text-lg font-semibold tracking-[-0.01em] text-foreground",
                 titleClassName,
               )}
             >
               {title}
-            </h2>
+            </TitleHeading>
           </div>
           {description ? (
             <p className="mt-1 truncate text-sm text-muted-foreground">

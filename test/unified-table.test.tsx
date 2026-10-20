@@ -434,10 +434,34 @@ describe("portable unified table", () => {
     value.selection = { selectedIds: [], onSelectAll: selectAll, onSelectRow: vi.fn() };
     mount(value);
     const checkbox = screen.getByRole("checkbox", { name: "Select all rows" });
-    expect(screen.getByRole("heading", { name: "Records", level: 2 }).parentElement?.contains(checkbox)).toBe(true);
+    expect(screen.getByRole("heading", { name: "Records", level: 1 }).parentElement?.contains(checkbox)).toBe(true);
     expect(document.querySelector("table thead [role=checkbox]")).toBeNull();
     fireEvent.click(checkbox);
     expect(selectAll).toHaveBeenCalledWith(true, ["b", "a"]);
+  });
+
+  // A page has exactly one h1 (DESIGN.md). In split view the rail header
+  // replaces the page header, and with no rows the rail is not rendered at
+  // all: /ai/approvals and /card-transactions shipped with no title (2026-10-20).
+  it.each([
+    ["with rows", records],
+    ["with no rows", []],
+  ])("keeps one h1 page title in split view %s", (_label, items) => {
+    const value = props();
+    value.toolbar.currentView = "split";
+    value.data = { items, isLoading: false };
+    mount(value);
+    const titles = screen.getAllByRole("heading", { level: 1 });
+    expect(titles).toHaveLength(1);
+    expect(titles[0].textContent).toContain("Records");
+  });
+
+  it("names a hidden-header split table with an h2, never a second h1", () => {
+    const value = props();
+    value.toolbar.currentView = "split";
+    value.header = { title: "Records", hidden: true };
+    mount(value);
+    expect(screen.queryAllByRole("heading", { level: 1 })).toHaveLength(0);
   });
 
   it.each([null, "b"])("keeps configured details in one split workspace with active row %s", activeRowId => {
