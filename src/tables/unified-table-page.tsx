@@ -1694,6 +1694,8 @@ export interface UnifiedTablePageProps<T> {
   /** Content rendered below the table and its pagination controls. */
   bottomContent?: ReactNode;
   sidePanel?: {
+    /** Peek overlays the grid; split reserves the panel width for the entire browser. */
+    presentation?: "peek" | "split";
     /**
      * Whole-pane replacement. Omit it: the pane then renders every labeled
      * column through the same editable-value path as the grid cell
@@ -2621,6 +2623,7 @@ export function UnifiedTablePage<T>({
   const panelCollapsible = sidePanel?.collapsible ?? true;
   const panelResizable = sidePanel?.resizable ?? true;
   const isPeekPanel = Boolean(sidePanel) && !canRenderSplitView;
+  const reserveSidePanelSpace = canRenderSplitView || sidePanel?.presentation === "split";
   const panelController = useTableSidePanelController({
     enabled: Boolean(sidePanel),
     size: sidePanel?.size,
@@ -6327,7 +6330,7 @@ export function UnifiedTablePage<T>({
             // Must come AFTER the side-panel gutter reset: `cn` is tailwind-merge,
             // which resolves a `pr` conflict by keeping the last class, so listing
             // the reservation first let "lg:pr-0" delete it outright.
-            canRenderSplitView &&
+            reserveSidePanelSpace &&
               !usesGenericSplitWorkspace &&
               sidePanel &&
               effectiveActiveRowId &&
@@ -6351,7 +6354,7 @@ export function UnifiedTablePage<T>({
                   // reserving again here would double-count it. Listed last for
                   // the tailwind-merge reason noted on PageContainer.
                   isSidePanelOpen &&
-                    !canRenderSplitView &&
+                    !reserveSidePanelSpace &&
                     (containerPadding
                       ? TABLE_SIDE_PANEL_HEADER_RESERVATION_CLASSNAME
                       : TABLE_SIDE_PANEL_WIDTH_RESERVATION_CLASSNAME),
@@ -6383,6 +6386,7 @@ export function UnifiedTablePage<T>({
                     <div className={TABLE_SIDE_PANEL_DESKTOP_WRAPPER_CLASSNAME}>
                       <TableSidePanel
                         title={sidePanel.title}
+                        dismissOnOutsideClick={sidePanel.presentation !== "split"}
                         headerActions={sidePanel.headerActions}
                         bodyLayout={sidePanel.bodyLayout}
                         width={panelWidth}
