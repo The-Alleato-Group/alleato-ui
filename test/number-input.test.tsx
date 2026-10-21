@@ -16,16 +16,22 @@ describe("NumberInput placeholder", () => {
 describe("NumberInput select-on-focus", () => {
   // Hold the deferred select so the test decides when the next frame runs.
   function holdFrames() {
-    const frames: FrameRequestCallback[] = [];
+    let frames = new Map<number, FrameRequestCallback>();
+    let nextId = 1;
     const raf = vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
-      frames.push(cb);
-      return frames.length;
+      const id = nextId++;
+      frames.set(id, cb);
+      return id;
     });
     const caf = vi.spyOn(window, "cancelAnimationFrame").mockImplementation((id) => {
-      frames[id - 1] = () => undefined;
+      frames.delete(id);
     });
     return {
-      flush: () => frames.splice(0).forEach((cb) => cb(0)),
+      flush: () => {
+        const pending = frames;
+        frames = new Map();
+        pending.forEach((cb) => cb(0));
+      },
       restore: () => { raf.mockRestore(); caf.mockRestore(); },
     };
   }
