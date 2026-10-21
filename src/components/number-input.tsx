@@ -54,6 +54,21 @@ function NumberInput({
   const internalRef = React.useRef<HTMLInputElement>(null)
   const replaceOnNextInputRef = React.useRef(false)
   const focusedRawValueRef = React.useRef("")
+  const selectFrameRef = React.useRef<number | null>(null)
+
+  // autoSelectOnFocus selects one frame after focus (so a mouseup cannot undo
+  // it). If the user types before that frame runs, a late select() would
+  // highlight what they typed and the next key would replace it: "7.5" saved
+  // as 0.5, "12.5" as 2.5. An actual edit (change or paste), blur or unmount
+  // cancels the pending select; non-editing keys keep it.
+  const cancelPendingSelect = React.useCallback(() => {
+    if (selectFrameRef.current !== null) {
+      cancelAnimationFrame(selectFrameRef.current)
+      selectFrameRef.current = null
+    }
+  }, [])
+
+  React.useEffect(() => cancelPendingSelect, [cancelPendingSelect])
 
   // Merge external ref with internal ref
   const setRefs = React.useCallback((node: HTMLInputElement | null) => {
@@ -116,6 +131,7 @@ function NumberInput({
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    cancelPendingSelect()
     const incoming = sanitize(e.target.value)
     const focusedRaw = focusedRawValueRef.current
     let cleaned = incoming
@@ -146,14 +162,24 @@ function NumberInput({
     setDisplayValue(startsAsPlaceholderZero ? "" : raw)
 
     if (autoSelectOnFocus) {
-      e.target.setSelectionRange(0, e.target.value.length)
-      requestAnimationFrame(() => e.target.select())
+      const input = e.target
+      input.setSelectionRange(0, input.value.length)
+      cancelPendingSelect()
+      selectFrameRef.current = requestAnimationFrame(() => {
+        selectFrameRef.current = null
+        // Typing or blurring cancels this frame (cancelPendingSelect), so a
+        // select here never swallows a typed key.
+        if (document.activeElement === input) {
+          input.select()
+        }
+      })
     }
 
     onFocus?.(e)
   }
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    cancelPendingSelect()
     isFocusedRef.current = false
     replaceOnNextInputRef.current = false
     focusedRawValueRef.current = ""
@@ -171,6 +197,7 @@ function NumberInput({
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault()
+    cancelPendingSelect()
     const pasted = e.clipboardData.getData("text")
     const cleaned = sanitize(pasted.replace(/[,\s]/g, ""))
     setDisplayValue(cleaned)
