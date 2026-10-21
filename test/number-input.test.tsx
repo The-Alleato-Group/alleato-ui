@@ -58,6 +58,18 @@ describe("NumberInput select-on-focus", () => {
     expect(values.at(-1)).toBe(expected);
   });
 
+  it("keeps the deferred select when a non-editing key arrives first", () => {
+    const frames = holdFrames();
+    render(<NumberInput aria-label="Retainage" value={10} onChange={() => undefined} />);
+    const input = screen.getByLabelText("Retainage") as HTMLInputElement;
+    act(() => { input.focus(); });
+    input.setSelectionRange(1, 1); // mouseup collapsed the selection
+    fireEvent.keyDown(input, { key: "Shift" });
+    act(() => frames.flush());
+    frames.restore();
+    expect([input.selectionStart, input.selectionEnd]).toEqual([0, input.value.length]);
+  });
+
   it("still selects the existing value when nothing is typed", () => {
     const frames = holdFrames();
     render(<NumberInput aria-label="Retainage" value={10} onChange={() => undefined} />);

@@ -43,7 +43,6 @@ function NumberInput({
   formatOnBlur = true,
   decimals = 2,
   onBlur,
-  onKeyDown,
   value,
   placeholder,
   step = "0.01",
@@ -60,7 +59,8 @@ function NumberInput({
   // autoSelectOnFocus selects one frame after focus (so a mouseup cannot undo
   // it). If the user types before that frame runs, a late select() would
   // highlight what they typed and the next key would replace it: "7.5" saved
-  // as 0.5, "12.5" as 2.5. Any edit or key press cancels the pending select.
+  // as 0.5, "12.5" as 2.5. An actual edit (change or paste), blur or unmount
+  // cancels the pending select; non-editing keys keep it.
   const cancelPendingSelect = React.useCallback(() => {
     if (selectFrameRef.current !== null) {
       cancelAnimationFrame(selectFrameRef.current)
@@ -195,11 +195,6 @@ function NumberInput({
     onBlur?.(e)
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    cancelPendingSelect()
-    onKeyDown?.(e)
-  }
-
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     e.preventDefault()
     cancelPendingSelect()
@@ -220,7 +215,6 @@ function NumberInput({
       onBlur={handleBlur}
       onChange={handleChange}
       onPaste={handlePaste}
-      onKeyDown={handleKeyDown}
       className={cn(
         "min-w-20 tabular-nums text-right !bg-transparent",
         "focus:border-input focus:ring-0",
