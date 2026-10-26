@@ -5998,7 +5998,7 @@ export function UnifiedTablePage<T>({
                     <TableRow className="hover:bg-transparent max-md:flex max-md:items-center">
                       {hasRowSelection && (
                         <TableHead
-                          className="h-9 pl-0 pr-2"
+                          className="h-9 pl-0 pr-2 max-md:pl-4 max-md:pr-0"
                           style={{
                             width: selectionColumnWidth,
                             minWidth: selectionColumnWidth,
