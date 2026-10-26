@@ -4109,7 +4109,7 @@ export function UnifiedTablePage<T>({
             type="button"
             variant="ghost"
             size="sm"
-            className="h-6 w-full justify-start gap-1.5 px-0 text-xs font-semibold text-muted-foreground hover:bg-transparent"
+            className="h-8 w-full justify-start gap-2 px-0 text-sm font-semibold text-foreground hover:bg-transparent"
             aria-expanded={!entry.collapsed}
             aria-label={`${entry.collapsed ? "Expand" : "Collapse"} ${entry.label}`}
             onClick={() => toggleGroup(entry.groupValue)}
@@ -4787,7 +4787,7 @@ export function UnifiedTablePage<T>({
                 return (
                   <React.Fragment key={`mobile-group::${groupValue}`}>
                     {entry ? (
-                      <div className="bg-muted/40 text-muted-foreground font-semibold">
+                      <div data-table-group-heading="" className="border-y border-border bg-muted px-3 py-2 text-sm font-semibold text-foreground">
                         {renderGroupHeading(entry)}
                       </div>
                     ) : null}
@@ -5314,7 +5314,8 @@ export function UnifiedTablePage<T>({
                               (hasRowSelection ? 1 : 0) +
                               (hasRowActions ? 1 : 0)
                             }
-                            className="bg-muted/40 !px-1 !py-1 text-xs font-semibold text-muted-foreground"
+                            data-table-group-heading=""
+                            className="border-y border-border bg-muted px-3 !py-2 text-sm font-semibold text-foreground"
                             style={
                               groupLabelOffsetPx === undefined
                                 ? undefined

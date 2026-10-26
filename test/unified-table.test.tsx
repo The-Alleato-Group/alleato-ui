@@ -738,6 +738,34 @@ describe("draft price table behavior", () => {
     expect(screen.queryByRole("cell", { name: "Bravo" })).toBeNull();
   });
 
+  it("distinguishes section headings from data rows on desktop and mobile", () => {
+    const value = props();
+    value.table.grouping = {
+      getGroupValue: (row) => row.status,
+      collapsible: true,
+      indentItems: true,
+      getGroupStatus: () => "0/5 required inputs supplied",
+    };
+    const { container } = mount(value);
+    const headings = container.querySelectorAll<HTMLElement>("[data-table-group-heading]");
+    expect(headings).toHaveLength(4);
+    expect([...headings].some((heading) => heading.tagName === "TD")).toBe(true);
+    expect([...headings].some((heading) => heading.tagName === "DIV")).toBe(true);
+    for (const heading of headings) {
+      expect(heading.classList.contains("bg-muted")).toBe(true);
+      expect(heading.classList.contains("text-foreground")).toBe(true);
+      expect(heading.classList.contains("text-sm")).toBe(true);
+      expect(heading.classList.contains("font-semibold")).toBe(true);
+      const toggle = within(heading).getByRole("button");
+      expect(toggle.classList.contains("text-foreground")).toBe(true);
+      fireEvent.click(toggle);
+      expect(toggle.getAttribute("aria-expanded")).toBe("false");
+      expect(toggle.textContent).toContain("0/5 required inputs supplied");
+      fireEvent.click(toggle);
+    }
+    expect(screen.getByRole("cell", { name: "Bravo" })).toBeTruthy();
+  });
+
   it("keeps mobile rows when their group heading is suppressed", () => {
     const value = props();
     value.table.grouping = {
