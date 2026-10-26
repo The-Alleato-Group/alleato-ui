@@ -426,7 +426,11 @@ describe("portable unified table", () => {
     }
   });
 
-  it.each([undefined, ["name", "status"]])("owns one select-all beside the split title (%s)", splitColumns => {
+  it.each([
+    { splitColumns: undefined, inTitle: false },
+    { splitColumns: ["name"], inTitle: true },
+    { splitColumns: ["name", "status"], inTitle: false },
+  ])("places one select-all with its list or column heading ($splitColumns)", ({ splitColumns, inTitle }) => {
     const value = props();
     value.toolbar.currentView = "split";
     value.table.splitColumns = splitColumns;
@@ -434,10 +438,34 @@ describe("portable unified table", () => {
     value.selection = { selectedIds: [], onSelectAll: selectAll, onSelectRow: vi.fn() };
     mount(value);
     const checkbox = screen.getByRole("checkbox", { name: "Select all rows" });
-    expect(screen.getByRole("heading", { name: "Records", level: 1 }).parentElement?.contains(checkbox)).toBe(true);
-    expect(document.querySelector("table thead [role=checkbox]")).toBeNull();
+    const titleGroup = screen.getByRole("heading", { name: "Records", level: 1 }).parentElement!;
+    expect(titleGroup.contains(checkbox)).toBe(inTitle);
+    if (!inTitle) {
+      expect(checkbox.closest("th")).toBe(screen.getAllByRole("columnheader")[0]);
+      expect(checkbox.closest("thead")?.className).not.toContain("max-md:hidden");
+    } else {
+      expect(document.querySelector("table thead [role=checkbox]")).toBeNull();
+    }
     fireEvent.click(checkbox);
     expect(selectAll).toHaveBeenCalledWith(true, ["b", "a"]);
+  });
+
+  it("keeps mixed split-table selection in the column header without activating a row", () => {
+    const value = props();
+    value.toolbar.currentView = "split";
+    value.table.splitColumns = ["name", "status"];
+    const selectAll = vi.fn();
+    const activate = vi.fn();
+    value.table.onRowClick = activate;
+    value.selection = { selectedIds: ["b"], onSelectAll: selectAll, onSelectRow: vi.fn() };
+    mount(value);
+    const checkbox = screen.getByRole("checkbox", { name: "Select all rows" });
+    expect(checkbox.getAttribute("aria-checked")).toBe("mixed");
+    expect(checkbox.closest("th")).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Records", level: 1 }).closest("header")?.contains(checkbox)).toBe(false);
+    fireEvent.click(checkbox);
+    expect(selectAll).toHaveBeenCalledWith(true, ["b", "a"]);
+    expect(activate).not.toHaveBeenCalled();
   });
 
   // A page has exactly one h1 (DESIGN.md). In split view the rail header
