@@ -4604,6 +4604,7 @@ export function UnifiedTablePage<T>({
     </>
   );
 
+  const splitHasColumnHeaders = splitViewColumns.length > 1;
   const splitWorkspaceRailHeader = usesGenericSplitWorkspace ? (
     <SplitPageWorkspaceRailHeader
       // In split view this rail replaces the page header, so it carries the
@@ -4622,7 +4623,9 @@ export function UnifiedTablePage<T>({
       }
       description={isCompactDensity ? undefined : header.description}
       actions={headerActionsSlot}
-      selection={hasRowSelection ? {
+      // Tables own select-all in their column heading. A reserved title slot
+      // would indent the heading even while its checkbox is hidden.
+      selection={hasRowSelection && !splitHasColumnHeaders ? {
         checked: allSelected ? true : someSelected ? "indeterminate" : false,
         onCheckedChange: handleSelectAll,
         disabled: rowOrderedItems.length === 0,
@@ -4937,7 +4940,7 @@ export function UnifiedTablePage<T>({
                         }}
                       >
                         <div className="flex items-center justify-center">
-                          {!usesGenericSplitWorkspace && <Checkbox
+                          <Checkbox
                             checked={
                               allSelected
                                 ? true
@@ -4949,7 +4952,7 @@ export function UnifiedTablePage<T>({
                               handleSelectAll(Boolean(checked))
                             }
                             aria-label="Select all rows"
-                          />}
+                          />
                         </div>
                       </TableHead>
                     )}
@@ -5956,7 +5959,7 @@ export function UnifiedTablePage<T>({
 
           const selectedItem = activeItem ?? rowOrderedItems[0];
 
-          const compactSplitTable = splitViewColumns.length > 1;
+          const compactSplitTable = splitHasColumnHeaders;
           // The split list is the table view in a narrower pane, so it carries
           // the same selection column — same width, same handlers, same
           // select-all semantics — and the toolbar's bulk actions work from it.
@@ -5991,8 +5994,8 @@ export function UnifiedTablePage<T>({
             >
               {compactSplitTable ? (
                 <Table className="table-fixed max-md:block max-md:w-full">
-                  <TableHeader className="sticky top-0 z-[1] bg-background max-md:hidden">
-                    <TableRow className="hover:bg-transparent">
+                  <TableHeader className="sticky top-0 z-[1] bg-background max-md:block">
+                    <TableRow className="hover:bg-transparent max-md:flex max-md:items-center">
                       {hasRowSelection && (
                         <TableHead
                           className="h-9 pl-0 pr-2"
@@ -6003,7 +6006,7 @@ export function UnifiedTablePage<T>({
                           }}
                         >
                           <div className="flex items-center justify-center">
-                            {!usesGenericSplitWorkspace && <Checkbox
+                            <Checkbox
                               checked={
                                 allSelected
                                   ? true
@@ -6014,8 +6017,9 @@ export function UnifiedTablePage<T>({
                               onCheckedChange={(checked) =>
                                 handleSelectAll(Boolean(checked))
                               }
+                              disabled={rowOrderedItems.length === 0}
                               aria-label="Select all rows"
-                            />}
+                            />
                           </div>
                         </TableHead>
                       )}
@@ -6025,6 +6029,7 @@ export function UnifiedTablePage<T>({
                           className={cn(
                             "h-9 px-2 sm:px-5",
                             LABEL_HEADING_CLASS,
+                            index > 0 && "max-md:hidden",
                           )}
                           style={{
                             width:
