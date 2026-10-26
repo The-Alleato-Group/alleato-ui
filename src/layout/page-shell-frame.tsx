@@ -4,6 +4,25 @@ import * as React from "react";
 import { cn } from "../lib/utils";
 import { PageContainer } from "./page-container";
 import { TablePageLayoutProvider } from "./table-page-layout-context";
+import { useWorkspaceOwnsGutter } from "./workspace-gutter-context";
+
+// A page-level tab strip (an inline PageTabs that is a direct child of the
+// page content) runs to both screen edges on a phone, with its first tab still
+// aligned to the content. Stopping at the 16px gutter clipped the last tab
+// mid-word at an arbitrary line, so the row read as cut off rather than
+// scrollable (owner, 2026-10-26). The frame owns the gutter, so the frame
+// owns the bleed: it only applies while the frame's own px-4 phone gutter is
+// in force. Tab strips nested inside cards are not direct children and stay
+// inside their card. The edge fade is dropped there: the tab cut by the
+// screen edge is the scroll cue, and the fade painted the wrong colour on a
+// tinted canvas.
+const PHONE_PAGE_TABS_BLEED = [
+  "max-sm:[&>[data-page-tabs=inline]]:-mx-4",
+  "max-sm:[&>[data-page-tabs=inline]]:w-auto",
+  "max-sm:[&>[data-page-tabs=inline]>nav]:px-4",
+  "max-sm:[&>[data-page-tabs=inline]>nav]:scroll-px-4",
+  "max-sm:[&>[data-page-tabs=inline]>[data-page-tabs-fade]]:hidden",
+].join(" ");
 
 export type PageShellVariant =
   | "dashboard"
@@ -93,6 +112,11 @@ export function PageShellFrame({
   className, contentClassName, containerPaddingClassName, fillHeight = false,
 }: PageShellFrameProps) {
   const config = variantConfig[variant];
+  const workspaceOwnsGutter = useWorkspaceOwnsGutter();
+  const tabsBleed =
+    containerPaddingClassName === undefined && !workspaceOwnsGutter
+      ? PHONE_PAGE_TABS_BLEED
+      : undefined;
   const rootRef = React.useRef<HTMLDivElement | null>(null);
   // formWide is the form variant with a wider content column — every
   // form-specific behavior below applies to it identically.
@@ -151,6 +175,7 @@ export function PageShellFrame({
             className={cn(
               "min-w-0 pt-0 pb-24",
               "page-shell-content-entrance",
+              tabsBleed,
               fillHeight && "flex flex-1 flex-col min-h-0",
               contentClassName,
             )}
@@ -200,6 +225,7 @@ export function PageShellFrame({
                 ? "min-w-0 pt-8 pb-24"
                 : "min-w-0 pt-6 pb-24",
               "page-shell-content-entrance",
+              tabsBleed,
               variant === "dashboard" &&
                 "page-shell-content-entrance-dashboard",
               fillHeight && "flex flex-col flex-1 min-h-0",
@@ -236,6 +262,7 @@ export function PageShellFrame({
           config.spacing,
           variant === "workspace" ? "min-w-0 pt-8 pb-24" : "min-w-0 pt-6 pb-24",
           "page-shell-content-entrance",
+          tabsBleed,
           fillHeight && "flex flex-col flex-1 min-h-0",
           contentClassName,
         )}
