@@ -63,6 +63,38 @@ describe("portable page layout ownership", () => {
   });
 });
 
+describe("page-level tab strip on a phone", () => {
+  const strip = (
+    <PageTabs variant="inline" pathname="/records" onNavigate={vi.fn()} tabs={[
+      { label: "General", href: "/records" },
+      { label: "Related Items", href: "/records/related" },
+    ]} />
+  );
+  const contentOf = (container: HTMLElement) =>
+    container.querySelector("[data-page-tabs=inline]")!.parentElement!;
+
+  it("runs a direct-child inline strip to both screen edges with an inset first tab", () => {
+    const { container } = render(<PageShellFrame variant="detailWide">{strip}</PageShellFrame>);
+    const content = contentOf(container);
+    expect(content.className).toContain("max-sm:[&>[data-page-tabs=inline]]:-mx-4");
+    expect(content.className).toContain("max-sm:[&>[data-page-tabs=inline]>nav]:px-4");
+    expect(content.className).toContain("max-sm:[&>[data-page-tabs=inline]>[data-page-tabs-fade]]:hidden");
+    expect(container.querySelector("[data-page-tabs=inline] > [data-page-tabs-fade]")).not.toBeNull();
+  });
+
+  it("does not bleed when the frame does not own the phone gutter", () => {
+    const owned = render(
+      <WorkspaceGutterProvider><PageShellFrame variant="detail">{strip}</PageShellFrame></WorkspaceGutterProvider>,
+    );
+    expect(contentOf(owned.container).className).not.toContain("-mx-4");
+    owned.unmount();
+    const custom = render(
+      <PageShellFrame variant="detail" containerPaddingClassName="px-0">{strip}</PageShellFrame>,
+    );
+    expect(contentOf(custom.container).className).not.toContain("-mx-4");
+  });
+});
+
 describe("tabs with host-supplied routing", () => {
   it("selects the exact query tab and calls the host when another tab is chosen", () => {
     const navigate = vi.fn();
@@ -197,4 +229,20 @@ it("keeps the new portable exports independent of app aliases, routing and netwo
     expect(source).not.toMatch(/from ["'](?:@\/|next\/navigation)/);
     expect(source).not.toMatch(/\b(?:apiFetch|fetch|useCurrentUserProfile)\(/);
   }
+});
+
+describe("detail field grid on a phone", () => {
+  it("pairs fields in two columns inside a phone-width card", async () => {
+    const { DetailField, DetailFieldGrid } = await import("../src/ds/DetailField");
+    const { container } = render(
+      <DetailFieldGrid columns={3}>
+        <DetailField label="Vendor">Hunter Electrical</DetailField>
+        <DetailField label="Default retainage">0%</DetailField>
+      </DetailFieldGrid>,
+    );
+    const grid = container.querySelector(".grid")!;
+    // A phone card is ~20rem inside; the first column break must sit below it.
+    expect(grid.className).toContain("@[18rem]/detail-grid:grid-cols-2");
+    expect(grid.className).not.toContain("@[28rem]/detail-grid:grid-cols-2");
+  });
 });

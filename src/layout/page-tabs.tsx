@@ -189,10 +189,11 @@ export function PageTabs({
 
   return (
     <div
+      data-page-tabs={variant}
       className={cn(wrapperClasses, spacingClasses, className, rowRuleClasses)}
     >
       {variant === "inline" && (
-        <div className="pointer-events-none absolute right-0 top-0 z-10 h-[calc(100%-0.25rem)] w-4 bg-gradient-to-l from-background to-transparent md:hidden" />
+        <div data-page-tabs-fade="" className="pointer-events-none absolute right-0 top-0 z-10 h-[calc(100%-0.25rem)] w-4 bg-gradient-to-l from-background to-transparent md:hidden" />
       )}
       <nav className={cn(navClasses, navRuleClasses)} aria-label="Tabs">
         <div

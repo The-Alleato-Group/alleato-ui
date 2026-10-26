@@ -53,8 +53,8 @@ export interface DetailFieldProps {
 // row" wherever the grid has more than one column.
 const spanClass: Record<1 | 2 | 3, string> = {
   1: "",
-  2: "@[28rem]/detail-grid:col-span-2",
-  3: "@[28rem]/detail-grid:col-span-full",
+  2: "@[18rem]/detail-grid:col-span-2",
+  3: "@[18rem]/detail-grid:col-span-full",
 };
 
 /**
@@ -231,11 +231,14 @@ export interface DetailFieldGridProps {
 // at the reference 1280px the prime contract's field grid measures 686px
 // (42.9rem), and the design shows three columns there. A 46rem threshold —
 // derived from the card's outer width — still fell back to two.
+// Two columns start at 18rem so a phone card (~20rem inside) pairs its fields
+// the way the financial strip above it does, instead of stacking every field
+// down the screen (owner, 2026-10-26). The narrow gap keeps ~9rem per value.
 const colClass: Record<1 | 2 | 3 | 4, string> = {
   1: "",
-  2: "@[28rem]/detail-grid:grid-cols-2",
-  3: "@[28rem]/detail-grid:grid-cols-2 @[42rem]/detail-grid:grid-cols-3",
-  4: "@[28rem]/detail-grid:grid-cols-2 @[42rem]/detail-grid:grid-cols-3 @[58rem]/detail-grid:grid-cols-4",
+  2: "@[18rem]/detail-grid:grid-cols-2",
+  3: "@[18rem]/detail-grid:grid-cols-2 @[42rem]/detail-grid:grid-cols-3",
+  4: "@[18rem]/detail-grid:grid-cols-2 @[42rem]/detail-grid:grid-cols-3 @[58rem]/detail-grid:grid-cols-4",
 };
 
 export function DetailFieldGrid({
@@ -250,7 +253,7 @@ export function DetailFieldGrid({
     <div className="@container/detail-grid min-w-0">
       <div
         className={cn(
-          "grid grid-cols-1 gap-x-8 gap-y-6",
+          "grid grid-cols-1 gap-x-4 gap-y-6 @[28rem]/detail-grid:gap-x-8",
           colClass[resolvedColumns],
           className,
         )}
