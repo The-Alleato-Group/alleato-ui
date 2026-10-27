@@ -4622,7 +4622,14 @@ export function UnifiedTablePage<T>({
         </>
       }
       description={isCompactDensity ? undefined : header.description}
-      actions={headerActionsSlot}
+      actions={
+        toolbarInlineWithHeader && !shouldPortalToolbar && !hideToolbar ? (
+          <div className={cn(TABLE_INLINE_HEADER_ACTIONS_CLASSNAME, "max-lg:-mt-2")}>
+            <div className="min-w-0 flex-1">{tableToolbar}</div>
+            {headerActionsSlot}
+          </div>
+        ) : headerActionsSlot
+      }
       // Tables own select-all in their column heading. A reserved title slot
       // would indent the heading even while its checkbox is hidden.
       selection={hasRowSelection && !splitHasColumnHeaders ? {
@@ -4632,7 +4639,7 @@ export function UnifiedTablePage<T>({
         "aria-label": "Select all rows",
       } : undefined}
     >
-      {tabs || !shouldPortalToolbar ? (
+      {tabs || (!toolbarInlineWithHeader && !shouldPortalToolbar && !hideToolbar) ? (
         <div className="mt-3 flex min-w-0 flex-col gap-2">
           {tabs ? (
             <PageTabs
@@ -4641,7 +4648,7 @@ export function UnifiedTablePage<T>({
               className={TABLE_INLINE_PAGE_TABS_CLASSNAME}
             />
           ) : null}
-          {!shouldPortalToolbar ? (
+          {!toolbarInlineWithHeader && !shouldPortalToolbar && !hideToolbar ? (
             <div className="min-w-0">{tableToolbar}</div>
           ) : null}
         </div>

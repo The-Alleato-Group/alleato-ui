@@ -426,6 +426,25 @@ describe("portable unified table", () => {
     }
   });
 
+  it.each(["table", "split"] as const)("keeps one toolbar and row count beside the title in %s view", (view) => {
+    const value = props();
+    value.toolbar.currentView = view;
+    value.tabs = [{ label: "All", href: "/records", isActive: true }];
+    mount(value);
+    const heading = screen.getByRole("heading", { name: "Records", level: 1 });
+    const header = heading.closest("header")!;
+    const titleRow = view === "split" ? header.firstElementChild! : header;
+    const search = screen.getByRole("button", { name: "Search table" });
+    const count = screen.getByText("2 rows");
+    expect(titleRow.contains(search)).toBe(true);
+    expect(titleRow.contains(count)).toBe(true);
+    expect(titleRow.contains(screen.getByRole("navigation", { name: "Tabs" }))).toBe(false);
+    expect(screen.getAllByRole("button", { name: "Search table" })).toHaveLength(1);
+    fireEvent.click(search);
+    fireEvent.change(screen.getByPlaceholderText("Search..."), { target: { value: "Alpha" } });
+    expect(value.toolbar.onSearchChange).toHaveBeenCalledWith("Alpha");
+  });
+
   it.each([
     { splitColumns: undefined, inTitle: false },
     { splitColumns: ["name"], inTitle: true },

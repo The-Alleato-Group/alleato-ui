@@ -145,7 +145,7 @@ export function SplitPageWorkspaceRailHeader({
     <header
       className={cn("shrink-0 border-b border-border/70 px-5 py-4", className)}
     >
-      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-3 sm:flex-nowrap">
+      <div className="flex min-w-0 flex-wrap items-start gap-x-2 gap-y-3 sm:flex-nowrap">
         {leading ? <div className="shrink-0">{leading}</div> : null}
         <div className="min-w-0 flex-1">
           <div className="group/title flex min-w-0 items-center gap-1">
