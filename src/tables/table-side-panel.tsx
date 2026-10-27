@@ -147,8 +147,11 @@ export function TableSidePanel({
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-150">
-          <header className="flex h-12 shrink-0 items-center justify-between px-6">
-            <div className="flex min-w-0 items-center gap-1.5">
+          {/* Every panel gets the same gutter above its title as beside it, and
+              long record titles wrap rather than truncate. The title's 32px
+              line box matches the h-8 controls so they align on its first line. */}
+          <header className="flex shrink-0 items-start justify-between gap-3 px-6 pb-3 pt-6">
+            <div className="flex min-w-0 items-start gap-1.5">
               {isMobile && onClose && showCloseButton ? (
                 <Button
                   type="button"
@@ -162,7 +165,7 @@ export function TableSidePanel({
                 </Button>
               ) : null}
               {title ? (
-                <span className="truncate text-sm font-medium">{title}</span>
+                <span className="min-w-0 break-words py-1.5 text-sm font-medium leading-5">{title}</span>
               ) : null}
             </div>
 
