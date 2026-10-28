@@ -3441,6 +3441,10 @@ export function UnifiedTablePage<T>({
     !data.isLoading &&
     !data.error &&
     rowOrderedItems.length > 0;
+  const showSplitWorkspace = canRenderSplitView && (
+    showTable || (!hideTableBody && !data.isLoading && !data.error &&
+      usesGenericSplitWorkspace && Boolean(activeItem))
+  );
 
   const handleSortClick = (columnId: string) => {
     if (!effectiveSorting) return;
@@ -4742,6 +4746,17 @@ export function UnifiedTablePage<T>({
     </>
   ) : null;
 
+  const emptyStateContent = (
+    <div className="mt-4">
+      <EmptyState
+        icon={emptyState.icon ?? <Inbox />}
+        title={emptyState.title}
+        description={isFiltered ? emptyState.filteredDescription : emptyState.description}
+        action={!isFiltered ? emptyState.action : undefined}
+      />
+    </div>
+  );
+
   const tableAreaContent = (
     <>
       {persistentTopContent ? (
@@ -4766,20 +4781,7 @@ export function UnifiedTablePage<T>({
         <div className="mt-4 space-y-4">{topContent}</div>
       )}
 
-      {showEmptyState && (
-        <div className="mt-4">
-          <EmptyState
-            icon={emptyState.icon ?? <Inbox />}
-            title={emptyState.title}
-            description={
-              isFiltered
-                ? emptyState.filteredDescription
-                : emptyState.description
-            }
-            action={!isFiltered ? emptyState.action : undefined}
-          />
-        </div>
-      )}
+      {showEmptyState && !showSplitWorkspace ? emptyStateContent : null}
 
       {/* Mobile card view */}
       {showTable &&
@@ -5956,8 +5958,7 @@ export function UnifiedTablePage<T>({
           ) : null;
         })()}
 
-      {showTable &&
-        canRenderSplitView &&
+      {showSplitWorkspace &&
         (() => {
           const SplitView = views?.split;
           if (SplitView) {
@@ -6013,7 +6014,7 @@ export function UnifiedTablePage<T>({
                 sidePanel && "flex-1",
               )}
             >
-              {compactSplitTable ? (
+              {showEmptyState ? emptyStateContent : compactSplitTable ? (
                 <Table className="table-fixed max-md:block max-md:w-full">
                   <TableHeader className="sticky top-0 z-[1] bg-background max-md:block">
                     <TableRow className="hover:bg-transparent max-md:flex max-md:items-center">
@@ -6356,11 +6357,11 @@ export function UnifiedTablePage<T>({
 
   // For non-sidePanel pages, combine header + table into one block. The split
   // workspace's rail header replaces the page header, but that rail only
-  // renders with rows: an empty, loading, or failed split view keeps the page
-  // header, or the page loses its title and h1 (/ai/approvals, 2026-10-20).
+  // renders with rows or a valid independent detail: an empty unselected,
+  // loading, or failed split view keeps the page header and h1.
   const leftPaneContent = (
     <>
-      {!(usesGenericSplitWorkspace && showTable) ? aboveTableContent : null}
+      {!(usesGenericSplitWorkspace && showSplitWorkspace) ? aboveTableContent : null}
       <div
         className={
           canRenderSplitView ? "flex flex-col flex-1 min-h-0" : undefined

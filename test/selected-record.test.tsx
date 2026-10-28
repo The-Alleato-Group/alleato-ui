@@ -21,12 +21,12 @@ function host(): TableHost {
     storage: window.localStorage, reportNonCriticalFailure: vi.fn(), toast: { success: vi.fn(), error: vi.fn() },
   };
 }
-function mount(view: "table" | "card" | "split", record: Row | null = selected, activeId: string | null = selected.id) {
+function mount(view: "table" | "card" | "split", record: Row | null = selected, activeId: string | null = selected.id, items: Row[] = [visible], state: { isLoading?: boolean; error?: Error } = {}) {
   const edit = vi.fn(); const visibleItems = vi.fn(); const select = vi.fn(); const selectAll = vi.fn();
   const props: UnifiedTablePageProps<Row> = {
     header: { title: "Daily logs" },
-    toolbar: { totalItems: 2, filteredItems: 1, searchValue: "Other", onSearchChange: vi.fn(), currentView: view },
-    data: { items: [visible], isLoading: false, onVisibleItemsChange: visibleItems },
+    toolbar: { totalItems: 2, filteredItems: items.length, searchValue: "Other", onSearchChange: vi.fn(), currentView: view },
+    data: { items, isLoading: false, ...state, onVisibleItemsChange: visibleItems },
     table: {
       columns: [
         { id: "summary", label: "Summary", render: row => row.summary },
@@ -52,6 +52,29 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("independent selected record in the real shared table", () => {
+  it.each([["table", 1440], ["table", 390], ["split", 1440], ["split", 390]] as const)("retains selected fields, sections and Edit with zero filtered rows in %s at %i", async (view, width) => {
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
+    const result = mount(view, selected, selected.id, []);
+    expect(await screen.findByText(selected.summary)).toBeTruthy();
+    expect(screen.getByText(selected.status)).toBeTruthy();
+    expect(screen.getByText(selected.creator)).toBeTruthy();
+    expect(screen.getByText("Entered sections for selected record")).toBeTruthy();
+    expect(screen.getByText("No matching logs")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Edit selected" }));
+    expect(result.edit).toHaveBeenCalledExactlyOnceWith(selected.id);
+    await vi.waitFor(() => expect(result.visibleItems).toHaveBeenLastCalledWith([], expect.anything()));
+    expect(screen.queryByRole("checkbox", { name: "Select row" })).toBeNull();
+  });
+
+  it.each([{ isLoading: true }, { error: new Error("List unavailable") }])("preserves split loading/error semantics instead of revealing an independent detail: %j", state => {
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 1440 });
+    mount("split", selected, selected.id, [], state);
+    expect(screen.queryByText(selected.summary)).toBeNull();
+    expect(screen.queryByText("Entered sections for selected record")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Edit selected" })).toBeNull();
+    if (state.error) expect(screen.getByText("List unavailable")).toBeTruthy();
+  });
+
   it.each([
     ["table", 1440], ["table", 390], ["card", 1440], ["card", 390], ["split", 1440], ["split", 390],
   ] as const)("renders canonical fields and body in %s at %i without inserting the record into filtered results", async (view, width) => {
