@@ -1579,6 +1579,13 @@ export interface UnifiedTablePageProps<T> {
     allowRowClick?: (item: T) => boolean;
     activeRowId?: string | null;
     /**
+     * An already-authorized record selected outside the filtered/paged rows.
+     * Used only when getRowId(record) matches the active row ID and no visible
+     * row matches. It never enters grid results, exports or checkbox selection.
+     * The caller owns authorization and must clear it when identity changes.
+     */
+    selectedRecord?: T | null;
+    /**
      * Compact columns shown in the generic split-view list, primary first.
      * Omit to show the first three visible columns; declare them when the
      * table leads with an id so the title column takes the wide slot.
@@ -2643,7 +2650,6 @@ export function UnifiedTablePage<T>({
   });
   const panelCollapsed = panelCollapsible ? panelController.collapsed : false;
   const panelWidth = panelController.width;
-  const isSidePanelOpen = Boolean(sidePanel && effectiveActiveRowId);
   // Mount the panel body once. The desktop panel and the mobile overlay used
   // to both render it (one hidden only by CSS), so a panel with inputs existed
   // twice: duplicate field ids, two drafts, and every data hook ran twice.
@@ -2967,6 +2973,16 @@ export function UnifiedTablePage<T>({
     effectiveSorting?.sortBy,
     table,
   ]);
+
+  const hasSelectedRecord = table.selectedRecord !== undefined;
+  const selectedRecord = table.selectedRecord;
+  const activeItem = rowOrderedItems.find(
+    (item) => table.getRowId(item) === effectiveActiveRowId,
+  ) ?? (selectedRecord != null && effectiveActiveRowId != null &&
+    table.getRowId(selectedRecord) === effectiveActiveRowId ? selectedRecord : undefined);
+  const isSidePanelOpen = Boolean(
+    sidePanel && effectiveActiveRowId && (!hasSelectedRecord || activeItem),
+  );
 
   // Auto-built CSV exporter: used when toolbar.onExport is not provided.
   // Only exports columns that define csvValue — columns without it are silently skipped.
@@ -3425,6 +3441,10 @@ export function UnifiedTablePage<T>({
     !data.isLoading &&
     !data.error &&
     rowOrderedItems.length > 0;
+  const showSplitWorkspace = canRenderSplitView && (
+    showTable || (!hideTableBody && !data.isLoading && !data.error &&
+      usesGenericSplitWorkspace && Boolean(activeItem))
+  );
 
   const handleSortClick = (columnId: string) => {
     if (!effectiveSorting) return;
@@ -4656,10 +4676,6 @@ export function UnifiedTablePage<T>({
     </SplitPageWorkspaceRailHeader>
   ) : null;
 
-  const activeItem = rowOrderedItems.find(
-    (item) => table.getRowId(item) === effectiveActiveRowId,
-  );
-
   // One field list for every selected-item surface: the split view's
   // detail pane and the row-click side panel both render the record
   // through this, so wiring `editable` on a column edits it in the
@@ -4710,7 +4726,7 @@ export function UnifiedTablePage<T>({
 
   // What the row-click side panel shows: a whole-pane `content` when the page
   // supplies one, otherwise the shared column fields; `body` appends below.
-  const sidePanelChildren = sidePanel ? (
+  const sidePanelChildren = sidePanel && (!hasSelectedRecord || activeItem) ? (
     <>
       {sidePanel.content !== undefined
         ? sidePanel.content
@@ -4729,6 +4745,17 @@ export function UnifiedTablePage<T>({
       )}
     </>
   ) : null;
+
+  const emptyStateContent = (
+    <div className="mt-4">
+      <EmptyState
+        icon={emptyState.icon ?? <Inbox />}
+        title={emptyState.title}
+        description={isFiltered ? emptyState.filteredDescription : emptyState.description}
+        action={!isFiltered ? emptyState.action : undefined}
+      />
+    </div>
+  );
 
   const tableAreaContent = (
     <>
@@ -4754,20 +4781,7 @@ export function UnifiedTablePage<T>({
         <div className="mt-4 space-y-4">{topContent}</div>
       )}
 
-      {showEmptyState && (
-        <div className="mt-4">
-          <EmptyState
-            icon={emptyState.icon ?? <Inbox />}
-            title={emptyState.title}
-            description={
-              isFiltered
-                ? emptyState.filteredDescription
-                : emptyState.description
-            }
-            action={!isFiltered ? emptyState.action : undefined}
-          />
-        </div>
-      )}
+      {showEmptyState && !showSplitWorkspace ? emptyStateContent : null}
 
       {/* Mobile card view */}
       {showTable &&
@@ -5944,8 +5958,7 @@ export function UnifiedTablePage<T>({
           ) : null;
         })()}
 
-      {showTable &&
-        canRenderSplitView &&
+      {showSplitWorkspace &&
         (() => {
           const SplitView = views?.split;
           if (SplitView) {
@@ -5964,7 +5977,9 @@ export function UnifiedTablePage<T>({
             );
           }
 
-          const selectedItem = activeItem ?? rowOrderedItems[0];
+          const selectedItem = activeItem ?? (
+            effectiveActiveRowId == null && !hasSelectedRecord ? rowOrderedItems[0] : undefined
+          );
 
           const compactSplitTable = splitHasColumnHeaders;
           // The split list is the table view in a narrower pane, so it carries
@@ -5999,7 +6014,7 @@ export function UnifiedTablePage<T>({
                 sidePanel && "flex-1",
               )}
             >
-              {compactSplitTable ? (
+              {showEmptyState ? emptyStateContent : compactSplitTable ? (
                 <Table className="table-fixed max-md:block max-md:w-full">
                   <TableHeader className="sticky top-0 z-[1] bg-background max-md:block">
                     <TableRow className="hover:bg-transparent max-md:flex max-md:items-center">
@@ -6342,11 +6357,11 @@ export function UnifiedTablePage<T>({
 
   // For non-sidePanel pages, combine header + table into one block. The split
   // workspace's rail header replaces the page header, but that rail only
-  // renders with rows: an empty, loading, or failed split view keeps the page
-  // header, or the page loses its title and h1 (/ai/approvals, 2026-10-20).
+  // renders with rows or a valid independent detail: an empty unselected,
+  // loading, or failed split view keeps the page header and h1.
   const leftPaneContent = (
     <>
-      {!(usesGenericSplitWorkspace && showTable) ? aboveTableContent : null}
+      {!(usesGenericSplitWorkspace && showSplitWorkspace) ? aboveTableContent : null}
       <div
         className={
           canRenderSplitView ? "flex flex-col flex-1 min-h-0" : undefined
@@ -6477,7 +6492,7 @@ export function UnifiedTablePage<T>({
       </div>
 
       {/* Mobile side panel overlay */}
-      {sidePanel && !usesGenericSplitWorkspace && effectiveActiveRowId && isMobileViewport && (
+      {sidePanel && !usesGenericSplitWorkspace && isSidePanelOpen && isMobileViewport && (
         <div className="md:hidden">
           <TableSidePanel
             mode="mobile"
