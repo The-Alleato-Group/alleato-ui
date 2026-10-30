@@ -91,7 +91,7 @@ export function getPageTabTriggerClassName(
       : "min-h-11 px-0.5 py-3 text-sm";
 
   return cn(
-    "group relative inline-flex snap-start items-center gap-2 whitespace-nowrap font-medium transition-colors",
+    "group relative inline-flex cursor-pointer snap-start items-center gap-2 whitespace-nowrap font-medium transition-colors",
     sizingClasses,
     "rounded-none hover:bg-transparent active:translate-y-0",
     "after:pointer-events-none after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:rounded-full after:content-[''] after:transition-colors",
@@ -99,7 +99,7 @@ export function getPageTabTriggerClassName(
       ? tone === "ink"
         ? "font-semibold text-foreground after:bg-foreground"
         : "text-primary after:bg-primary"
-      : "text-foreground/70 hover:text-foreground/90 after:bg-transparent",
+      : "text-foreground/70 hover:text-foreground after:bg-transparent hover:after:bg-border",
   );
 }
 
