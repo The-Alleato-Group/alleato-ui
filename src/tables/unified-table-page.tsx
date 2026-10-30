@@ -1766,6 +1766,8 @@ export interface UnifiedTablePageProps<T> {
      * header row below `lg`). Only meaningful when `tabs` are provided.
      */
     toolbarWithTabs?: boolean;
+    /** Tighten the tabs-to-content gap without changing row density. */
+    tabContentSpacing?: "default" | "compact";
     maxWidth?: PageContainerProps["maxWidth"];
     containerClassName?: string;
     /** Override the card-view grid className (default: grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4) */
@@ -2431,6 +2433,7 @@ export function UnifiedTablePage<T>({
     layout?.toolbarInlineWithHeader,
   );
   const toolbarWithTabs = (layout?.toolbarWithTabs ?? false) && Boolean(tabs);
+  const compactTabContent = Boolean(tabs) && layout?.tabContentSpacing === "compact";
   const containerMaxWidth = layout?.maxWidth ?? "full";
   const containerClassName = layout?.containerClassName;
   const pageShellOwnsTableLayout = useTablePageShellOwnsLayout();
@@ -4593,7 +4596,7 @@ export function UnifiedTablePage<T>({
             isCompactDensity
               ? "pb-1 pt-0"
               : cn(
-                  tabs ? TABLE_TABBED_CONTENT_GAP_CLASSNAME : "pb-3",
+                  tabs ? compactTabContent ? "pb-1" : TABLE_TABBED_CONTENT_GAP_CLASSNAME : "pb-3",
                   containerPadding ? "pt-1 sm:pt-2" : "pt-0",
                 ),
           )}
@@ -4760,7 +4763,7 @@ export function UnifiedTablePage<T>({
   const tableAreaContent = (
     <>
       {persistentTopContent ? (
-        <div className="mt-4 space-y-4">{persistentTopContent}</div>
+        <div className={cn(compactTabContent ? "mt-0" : "mt-4", "space-y-4")}>{persistentTopContent}</div>
       ) : null}
 
       {data.isLoading && (
@@ -4778,7 +4781,7 @@ export function UnifiedTablePage<T>({
       )}
 
       {topContent && !data.isLoading && !data.error && (
-        <div className="mt-4 space-y-4">{topContent}</div>
+        <div className={cn(compactTabContent ? "mt-0" : "mt-4", "space-y-4")}>{topContent}</div>
       )}
 
       {showEmptyState && !showSplitWorkspace ? emptyStateContent : null}

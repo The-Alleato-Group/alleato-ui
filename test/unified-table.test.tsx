@@ -511,6 +511,20 @@ describe("portable unified table", () => {
     expect(screen.queryAllByRole("heading", { level: 1 })).toHaveLength(0);
   });
 
+  it.each([undefined, "default", "compact"] as const)("uses %s tab-content spacing independently of row density", spacing => {
+    const value = props();
+    value.tabs = [{ label: "All", href: "/records", isActive: true }];
+    value.layout = { tabContentSpacing: spacing };
+    value.topContent = <div>Criteria</div>;
+    value.persistentTopContent = <div>Notice</div>;
+    mount(value);
+    const tabRow = screen.getByRole("navigation", { name: "Tabs" }).parentElement!.parentElement!;
+    expect(tabRow.classList.contains(spacing === "compact" ? "pb-1" : "pb-4")).toBe(true);
+    for (const label of ["Criteria", "Notice"]) {
+      expect(screen.getByText(label).parentElement!.classList.contains(spacing === "compact" ? "mt-0" : "mt-4")).toBe(true);
+    }
+  });
+
   it.each([null, "b"])("keeps configured details in one split workspace with active row %s", activeRowId => {
     const value = props();
     value.toolbar.currentView = "split";
