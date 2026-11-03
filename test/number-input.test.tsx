@@ -13,6 +13,13 @@ describe("NumberInput placeholder", () => {
   });
 });
 
+describe("NumberInput variant", () => {
+  it("passes Input's variant through to the field", () => {
+    render(<NumberInput aria-label="Days" variant="inline" />);
+    expect(screen.getByLabelText("Days").getAttribute("data-variant")).toBe("inline");
+  });
+});
+
 describe("NumberInput select-on-focus", () => {
   // Hold the deferred select so the test decides when the next frame runs.
   function holdFrames() {

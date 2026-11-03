@@ -2,9 +2,11 @@
 
 import * as React from "react"
 import { cn } from "../lib/utils"
-import { Input } from "./input"
+import { Input, type InputProps } from "./input"
 
-interface NumberInputProps extends Omit<React.ComponentProps<"input">, "type" | "onFocus" | "onChange"> {
+// Extends Input's props (not the bare input's): the rest are spread onto Input,
+// so its `variant` reaches the field.
+interface NumberInputProps extends Omit<InputProps, "type" | "onFocus" | "onChange"> {
   onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   autoSelectOnFocus?: boolean;
