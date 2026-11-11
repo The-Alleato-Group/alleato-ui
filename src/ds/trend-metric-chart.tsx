@@ -112,7 +112,7 @@ function toRows(series: TrendChartSeries[]): ChartRow[] {
   const rows = new Map<string, ChartRow>();
   series.forEach((entry, index) => {
     for (const point of entry.data) {
-      const row = rows.get(point.date) ?? { date: point.date };
+      const row: ChartRow = rows.get(point.date) ?? { date: point.date };
       row[seriesKey(index)] = point.value;
       rows.set(point.date, row);
     }
