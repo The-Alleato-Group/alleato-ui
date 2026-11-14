@@ -254,6 +254,7 @@ describe("portable mobile cards", () => {
   it("keeps secondary fields collapsed out of unrelated tables by default", () => {
     const evidenceColumns = [
       ...columns,
+      { id: "blank", label: "Blank", render: () => null },
       { id: "amount", label: "Amount", render: () => "$42.00" },
       { id: "job", label: "Job", render: () => "Warehouse job" },
       { id: "receipt", label: "Receipt", render: () => "Receipt.pdf" },
@@ -261,6 +262,7 @@ describe("portable mobile cards", () => {
     render(<MobileCardList items={[item]} columns={evidenceColumns} getRowId={(row) => row.id}
       hasRowActions={false} />);
     expect(screen.queryByText("More details")).toBeNull();
+    expect(screen.queryByText("Warehouse job")).toBeNull();
     expect(screen.queryByText("Receipt.pdf")).toBeNull();
   });
 });

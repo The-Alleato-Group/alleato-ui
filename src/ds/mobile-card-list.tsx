@@ -146,12 +146,13 @@ export function MobileCardList<T>({
             titleIndex === -1 ? labelled[0] : labelled[titleIndex];
           // A column that renders nothing for this row contributes nothing —
           // a label with no value beside it is noise, not information.
-          const details = rendered
-            .filter(
-              (_, index) => index !== (titleIndex === -1 ? 0 : titleIndex),
-            )
-            .filter(({ value }) => hasRenderedValue(value));
-          const visibleDetails = details.slice(0, 3);
+          const candidates = rendered.filter(
+            (_, index) => index !== (titleIndex === -1 ? 0 : titleIndex),
+          );
+          const details = candidates.filter(({ value }) => hasRenderedValue(value));
+          const visibleDetails = showMoreDetails
+            ? details.slice(0, 3)
+            : candidates.slice(0, 3).filter(({ value }) => hasRenderedValue(value));
           const extraDetails = showMoreDetails ? details.slice(3) : [];
           const taskActions = mobileActions?.(item);
           const renderDetail = ({ col, value }: (typeof rendered)[number]) => (
