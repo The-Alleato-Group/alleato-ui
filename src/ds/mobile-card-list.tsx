@@ -66,6 +66,8 @@ export interface MobileCardListProps<T> {
   columns: MobileCardColumn<T>[];
   /** Task actions rendered below the compact metadata on phones. */
   mobileActions?: (item: T) => ReactNode;
+  /** Reveal secondary row fields only for tables that opt in. */
+  showMoreDetails?: boolean;
   getRowId: (item: T) => string;
   activeRowId?: string | null;
   /** Editor focus is distinct from row selection. */
@@ -97,6 +99,7 @@ export function MobileCardList<T>({
   items,
   columns,
   mobileActions,
+  showMoreDetails,
   getRowId,
   activeRowId,
   editingRowId,
@@ -149,7 +152,7 @@ export function MobileCardList<T>({
             )
             .filter(({ value }) => hasRenderedValue(value));
           const visibleDetails = details.slice(0, 3);
-          const extraDetails = details.slice(3);
+          const extraDetails = showMoreDetails ? details.slice(3) : [];
           const taskActions = mobileActions?.(item);
           const renderDetail = ({ col, value }: (typeof rendered)[number]) => (
             <div key={col.id} className="flex min-w-0 items-center justify-between gap-4">

@@ -1499,6 +1499,8 @@ export interface UnifiedTablePageProps<T> {
     mobileColumnIds?: readonly string[];
     /** Render a row's primary task controls below phone card metadata. */
     mobileActions?: (item: T) => ReactNode;
+    /** Offer secondary phone fields in a collapsed disclosure. */
+    mobileShowMoreDetails?: boolean;
     defaultPinnedLeftColumns?: string[];
     defaultPinnedRightColumns?: string[];
     rowActions?: (item: T) => ReactNode;
@@ -4113,6 +4115,7 @@ export function UnifiedTablePage<T>({
             ),
         })) : mobileColumns}
         mobileActions={table.mobileActions}
+        showMoreDetails={table.mobileShowMoreDetails}
         getRowId={table.getRowId}
         activeRowId={effectiveActiveRowId}
         editingRowId={

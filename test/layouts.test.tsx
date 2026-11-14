@@ -242,13 +242,26 @@ describe("portable mobile cards", () => {
       { id: "receipt", label: "Receipt", render: () => <a href="/receipt">Receipt.pdf</a> },
     ];
     render(<MobileCardList items={[item]} columns={evidenceColumns} getRowId={(row) => row.id}
-      hasRowActions={false} onRowClick={open} />);
+      hasRowActions={false} onRowClick={open} showMoreDetails />);
     const disclosure = screen.getByText("More details").closest("details")!;
     expect(disclosure.open).toBe(false);
     fireEvent.click(screen.getByText("More details"));
     expect(disclosure.open).toBe(true);
     expect(disclosure.textContent).toContain("Receipt.pdf");
     expect(open).not.toHaveBeenCalled();
+  });
+
+  it("keeps secondary fields collapsed out of unrelated tables by default", () => {
+    const evidenceColumns = [
+      ...columns,
+      { id: "amount", label: "Amount", render: () => "$42.00" },
+      { id: "job", label: "Job", render: () => "Warehouse job" },
+      { id: "receipt", label: "Receipt", render: () => "Receipt.pdf" },
+    ];
+    render(<MobileCardList items={[item]} columns={evidenceColumns} getRowId={(row) => row.id}
+      hasRowActions={false} />);
+    expect(screen.queryByText("More details")).toBeNull();
+    expect(screen.queryByText("Receipt.pdf")).toBeNull();
   });
 });
 
