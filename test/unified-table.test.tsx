@@ -105,6 +105,28 @@ function mount(value = props(), host = makeHost()) {
     </TooltipProvider>,
   );
 }
+it("prioritizes visible phone card fields without changing desktop column order", () => {
+  const value = props();
+  value.table.columns = [
+    ...columns,
+    { id: "merchant", label: "Merchant", render: () => "Supply House" },
+    { id: "amount", label: "Amount", render: () => "$42.00" },
+    { id: "owner", label: "Owner", render: () => "Sam" },
+  ];
+  value.table.mobileColumnIds = ["merchant", "amount", "owner", "status"];
+  const { container } = mount(value);
+  const card = [...container.querySelectorAll("div.rounded-2xl")].find((node) =>
+    node.textContent?.includes("Supply House"),
+  );
+  expect(card).toBeTruthy();
+  expect(card?.textContent).toContain("$42.00");
+  expect(card?.textContent).toContain("Sam");
+  expect(card?.textContent).toContain("Draft");
+  expect(card?.firstElementChild?.textContent).toContain("Supply House");
+  expect(card?.firstElementChild?.textContent).not.toContain("Bravo");
+  const headers = screen.getAllByRole("columnheader").map((node) => node.textContent);
+  expect(headers.indexOf("Name")).toBeLessThan(headers.indexOf("Merchant"));
+});
 it("reserves a split reader's width for the grid without reserving its header twice", () => {
   const value = props();
   value.table.activeRowId = "b";

@@ -64,6 +64,8 @@ function hasRenderedValue(value: ReactNode): boolean {
 export interface MobileCardListProps<T> {
   items: T[];
   columns: MobileCardColumn<T>[];
+  /** Task actions rendered below the compact metadata on phones. */
+  mobileActions?: (item: T) => ReactNode;
   getRowId: (item: T) => string;
   activeRowId?: string | null;
   /** Editor focus is distinct from row selection. */
@@ -94,6 +96,7 @@ export interface MobileCardListProps<T> {
 export function MobileCardList<T>({
   items,
   columns,
+  mobileActions,
   getRowId,
   activeRowId,
   editingRowId,
@@ -140,12 +143,24 @@ export function MobileCardList<T>({
             titleIndex === -1 ? labelled[0] : labelled[titleIndex];
           // A column that renders nothing for this row contributes nothing —
           // a label with no value beside it is noise, not information.
-          const visibleDetails = rendered
+          const details = rendered
             .filter(
               (_, index) => index !== (titleIndex === -1 ? 0 : titleIndex),
             )
-            .slice(0, 3)
             .filter(({ value }) => hasRenderedValue(value));
+          const visibleDetails = details.slice(0, 3);
+          const extraDetails = details.slice(3);
+          const taskActions = mobileActions?.(item);
+          const renderDetail = ({ col, value }: (typeof rendered)[number]) => (
+            <div key={col.id} className="flex min-w-0 items-center justify-between gap-4">
+              <span className="shrink-0 whitespace-nowrap text-xs font-normal text-muted-foreground">
+                {col.label}
+              </span>
+              <span className="flex min-w-0 flex-1 justify-end truncate text-right text-sm font-medium text-foreground [&>*]:w-auto [&>*]:max-w-full [&_*]:truncate">
+                {value}
+              </span>
+            </div>
+          );
 
           return (
             <div
@@ -269,28 +284,28 @@ export function MobileCardList<T>({
                   values truncate. */}
               {visibleDetails.length > 0 && (
                 <div className="mt-3.5 space-y-2.5">
-                  {visibleDetails.map(({ col, value }) => (
-                    <div
-                      key={col.id}
-                      className="flex min-w-0 items-center justify-between gap-4"
-                    >
-                      <span className="shrink-0 whitespace-nowrap text-xs font-normal text-muted-foreground">
-                        {col.label}
-                      </span>
-                      <span
-                        // `[&>*]:w-auto` is what makes the value sit on the
-                        // right. The columns are shared with the desktop
-                        // table, where a cell's control is `w-full` so it
-                        // fills its <td>; left alone here it fills the card
-                        // row too and the value reads as left-aligned.
-                        className="flex min-w-0 flex-1 justify-end truncate text-right text-sm font-medium text-foreground [&>*]:w-auto [&>*]:max-w-full [&_*]:truncate"
-                      >
-                        {value}
-                      </span>
-                    </div>
-                  ))}
+                  {visibleDetails.map(renderDetail)}
                 </div>
               )}
+              {extraDetails.length > 0 ? (
+                <details
+                  className="mt-3 text-sm"
+                  onClick={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => event.stopPropagation()}
+                >
+                  <summary className="flex min-h-11 cursor-pointer items-center text-primary">More details</summary>
+                  <div className="space-y-2.5 pb-2">{extraDetails.map(renderDetail)}</div>
+                </details>
+              ) : null}
+              {hasRenderedValue(taskActions) ? (
+                <div
+                  className="mt-3 flex flex-wrap items-center gap-2 [&_button]:min-h-11 [&_button]:min-w-11"
+                  onClick={(event) => event.stopPropagation()}
+                  onKeyDown={(event) => event.stopPropagation()}
+                >
+                  {taskActions}
+                </div>
+              ) : null}
             </div>
           );
         })}

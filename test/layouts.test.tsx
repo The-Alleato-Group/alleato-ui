@@ -220,6 +220,36 @@ describe("portable mobile cards", () => {
     expect(action).toHaveBeenCalledWith(item);
     expect(open).not.toHaveBeenCalled();
   });
+
+  it("shows primary task controls on cards without a row-actions menu", () => {
+    const approve = vi.fn();
+    const open = vi.fn();
+    render(<MobileCardList items={[item]} columns={columns} getRowId={(row) => row.id}
+      hasRowActions={false} onRowClick={open}
+      mobileActions={(row) => <button onClick={() => approve(row)}>Approve</button>} />);
+    fireEvent.keyDown(screen.getByRole("button", { name: "Approve" }), { key: "Enter" });
+    fireEvent.click(screen.getByRole("button", { name: "Approve" }));
+    expect(approve).toHaveBeenCalledWith(item);
+    expect(open).not.toHaveBeenCalled();
+  });
+
+  it("reveals additional decision evidence without opening the row", () => {
+    const open = vi.fn();
+    const evidenceColumns = [
+      ...columns,
+      { id: "amount", label: "Amount", render: () => "$42.00" },
+      { id: "job", label: "Job", render: () => "Warehouse job" },
+      { id: "receipt", label: "Receipt", render: () => <a href="/receipt">Receipt.pdf</a> },
+    ];
+    render(<MobileCardList items={[item]} columns={evidenceColumns} getRowId={(row) => row.id}
+      hasRowActions={false} onRowClick={open} />);
+    const disclosure = screen.getByText("More details").closest("details")!;
+    expect(disclosure.open).toBe(false);
+    fireEvent.click(screen.getByText("More details"));
+    expect(disclosure.open).toBe(true);
+    expect(disclosure.textContent).toContain("Receipt.pdf");
+    expect(open).not.toHaveBeenCalled();
+  });
 });
 
 it("keeps the new portable exports independent of app aliases, routing and network clients", () => {

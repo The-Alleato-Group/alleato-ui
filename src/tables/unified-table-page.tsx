@@ -1495,6 +1495,10 @@ export interface UnifiedTablePageProps<T> {
   };
   table: {
     columns: TableColumn<T>[];
+    /** Put task-relevant visible columns first on phone cards, without changing desktop order. */
+    mobileColumnIds?: readonly string[];
+    /** Render a row's primary task controls below phone card metadata. */
+    mobileActions?: (item: T) => ReactNode;
     defaultPinnedLeftColumns?: string[];
     defaultPinnedRightColumns?: string[];
     rowActions?: (item: T) => ReactNode;
@@ -4087,10 +4091,18 @@ export function UnifiedTablePage<T>({
   };
 
   function renderMobileItems(items: T[]) {
+    const mobileColumns = table.mobileColumnIds?.length
+      ? [
+          ...table.mobileColumnIds
+            .map((id) => orderedVisibleColumns.find((column) => column.id === id))
+            .filter((column): column is TableColumn<T> => Boolean(column)),
+          ...orderedVisibleColumns.filter((column) => !table.mobileColumnIds?.includes(column.id)),
+        ]
+      : orderedVisibleColumns;
     return (
       <MobileCardList<T>
         items={items}
-        columns={table.controlledInlineEditing ? orderedVisibleColumns.map((column) => ({
+        columns={table.controlledInlineEditing ? mobileColumns.map((column) => ({
           ...column,
           render: (item: T) =>
             renderInlineEditableValue(
@@ -4099,7 +4111,8 @@ export function UnifiedTablePage<T>({
               resolveColumnAlignment(column, "left"),
               "mobile",
             ),
-        })) : orderedVisibleColumns}
+        })) : mobileColumns}
+        mobileActions={table.mobileActions}
         getRowId={table.getRowId}
         activeRowId={effectiveActiveRowId}
         editingRowId={
