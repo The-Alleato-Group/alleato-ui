@@ -1,5 +1,4 @@
 import * as React from "react";
-import { MessageSquare } from "lucide-react";
 
 import { ErrorState } from "./error-state";
 import { cn } from "../lib/utils";
@@ -19,13 +18,6 @@ export interface CommentThreadProps {
   className?: string;
   ariaLabel?: string;
   id?: string;
-  /**
-   * Show the "No comments yet" placeholder when `count` is 0. Off for a host
-   * panel where the composer already says what to do and the section sits
-   * among other always-present sections — a centred empty block there reads
-   * as a permanent hole, not a state.
-   */
-  showEmptyState?: boolean;
   /**
    * Apply the component's own `sm:px-5` side gutter. Off when the host panel
    * already provides a consistent gutter for every section and this thread
@@ -56,7 +48,6 @@ export function CommentThread({
   className,
   ariaLabel,
   id,
-  showEmptyState = true,
   inset = true,
 }: CommentThreadProps) {
   const Heading = headingAs;
@@ -139,19 +130,6 @@ export function CommentThread({
                   error={typeof error === "string" ? error : undefined}
                   className="items-start gap-2 py-3 text-left [&>div:first-child]:hidden"
                 />
-              </div>
-            ) : count === 0 && showEmptyState ? (
-              <div className="flex flex-col items-center py-12 text-center">
-                <MessageSquare
-                  className="size-6 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                <p className="mt-3 text-[13px] font-medium text-muted-foreground">
-                  No comments yet
-                </p>
-                <p className="mt-1 max-w-60 text-xs text-muted-foreground">
-                  Start the conversation — @ someone to notify them
-                </p>
               </div>
             ) : (
               children

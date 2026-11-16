@@ -86,10 +86,10 @@ describe("shared design-system contracts", () => {
     expect(document.querySelector("script")).toBeNull();
   });
 
-  it("keeps a comment thread usable when it has no history", () => {
+  it("keeps the composer available when a comment thread has no history", () => {
     render(<CommentThread count={0} composer={<button>Post comment</button>} />);
     expect(screen.getByRole("button", { name: "Post comment" })).toBeTruthy();
-    expect(screen.getByText("No comments yet")).toBeTruthy();
+    expect(screen.queryByText("No comments yet")).toBeNull();
   });
 
   it("takes author identity from its consumer", () => {
