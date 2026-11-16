@@ -163,6 +163,18 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("portable unified table", () => {
+  it("shows a usable reorder grip and does not offer one for a pinned action column", () => {
+    const value = props();
+    value.features = { ...value.features, enableColumnReorder: true };
+    value.table.defaultPinnedRightColumns = ["status"];
+    mount(value);
+
+    const grip = screen.getByLabelText("Drag Name column");
+    expect(grip.className).toContain("h-6 w-6");
+    expect(grip.className).not.toContain("opacity-0");
+    expect(screen.queryByLabelText("Drag Status column")).toBeNull();
+  });
+
   it("keeps custom data actions reachable in the mobile toolbar", () => {
     vi.stubGlobal("matchMedia", vi.fn((query: string) => ({
       matches: true, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn(),
