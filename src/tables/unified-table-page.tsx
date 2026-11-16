@@ -5005,6 +5005,7 @@ export function UnifiedTablePage<T>({
                           column.sortable !== false &&
                           Boolean(effectiveSorting);
                         const isHideable = !column.alwaysVisible;
+                        const isPinned = columnPinning.left.includes(column.id) || columnPinning.right.includes(column.id);
                         const columnAlignment = resolveColumnAlignment(
                           column,
                           headerAlignment,
@@ -5034,7 +5035,7 @@ export function UnifiedTablePage<T>({
                           <SortableColumnHead
                             key={column.id}
                             id={column.id}
-                            disabled={!resolvedFeatures.enableColumnReorder}
+                            disabled={!resolvedFeatures.enableColumnReorder || isPinned}
                             className={cn(
                               "relative align-middle data-[dragging=true]:shadow-sm",
                               column.traceState === "active" && "bg-muted",
@@ -5087,13 +5088,13 @@ export function UnifiedTablePage<T>({
                           >
                             {({ attributes, listeners }) => {
                               const dragHandle =
-                                resolvedFeatures.enableColumnReorder ? (
+                                resolvedFeatures.enableColumnReorder && !isPinned ? (
                                   <span
                                     {...attributes}
                                     {...listeners}
                                     aria-label={`Drag ${column.label} column`}
                                     title="Drag to reorder column"
-                                    className="ml-1 inline-flex h-4 w-4 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted-foreground/40 opacity-0 transition-[color,opacity] hover:text-muted-foreground group-hover/th:opacity-100 group-focus-within/th:opacity-100 active:cursor-grabbing"
+                                    className="ml-1 inline-flex h-6 w-6 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted-foreground/70 transition-colors hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground active:cursor-grabbing"
                                     onClick={(event) => event.stopPropagation()}
                                   >
                                     <GripVertical
