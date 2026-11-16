@@ -238,3 +238,16 @@ The labeled primary action beneath a summary total uses `Button size="summary"`.
 The package owns its 50px height and typography; hosts may still supply layout
 width such as `w-full`. Review statuses such as `pending_review` use the shared
 StatusBadge warning state after normalization.
+
+## Browse the component catalog
+
+Use Node.js 22.12 or newer on the Node 22 line and the repository's pnpm 10.13.1:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm storybook
+```
+
+Open [the catalog](http://127.0.0.1:6006/?path=/story/start-here--catalog). Pick a component in the sidebar, use **Controls** where a story exposes props, and switch **Theme** to compare Light and Dark. Use the preview's viewport menu or resize the browser for responsive examples. Stories for compound components show their pieces together in context. Table and comment stories use sample records and local React state.
+
+Run `pnpm build-storybook` to write the static catalog to the ignored `storybook-static/` directory. This build does not deploy or publish the package. New visual exports should have an example under `stories/` for their package subpath; provider-only modules can be demonstrated in a consumer story.
