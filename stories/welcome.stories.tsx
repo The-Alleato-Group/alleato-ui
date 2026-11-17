@@ -25,6 +25,11 @@ type Story = StoryObj<typeof meta>;
 
 const destinations = [
   {
+    label: "Premium interactions",
+    detail: "Airbnb-inspired selection, cards, counters, and motion.",
+    href: "./?path=/story/premium-interaction-library--collection",
+  },
+  {
     label: "Components",
     detail: "Buttons, inputs, overlays, and feedback.",
     href: "./?path=/story/components-button--variants",

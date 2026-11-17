@@ -15,14 +15,14 @@ source: Megan's Mobbin reference and shared component library request
 ## P0 — Reference and ownership
 
 - [x] PCM-001: Inspect existing library and compare Mobbin references. **Files:** existing package, stories. **Done when:** An inspected reference and explicit component scope are recorded. Effort: S. Evidence: Airbnb, Fresha and Revolut web screens inspected; Airbnb selected for choice controls, compact counters, media cards and filter composition.
-- [ ] PCM-002: Publish the existing catalog source from its isolated checkout. **Files:** `.storybook`, `stories`, catalog plan. **Done when:** Rebased catalog passes checks and lands on remote main. Effort: S.
+- [x] PCM-002: Publish the existing catalog source from its isolated checkout. **Files:** `.storybook`, `stories`, catalog plan. **Done when:** Rebased catalog passes checks and lands on remote main. Effort: S. Evidence: PR #30 merged as d655712; typecheck, 334 tests and static build passed.
 
 Gate: Reuse existing primitives and keep unrelated checkout changes untouched.
 
 ## P1 — Shared implementation
 
-- [ ] PCM-003: Add controlled segmented selection, selection cards, quantity stepper, favorite button, media card and motion reveal. **Files:** `src/ds`, `styles`. **Done when:** Importable components share motion tokens, preserve semantics and work with reduced motion. Effort: L.
-- [ ] PCM-004: Compose an interactive premium workbench and component state stories. **Files:** `stories/premium`, catalog welcome. **Done when:** Each component has usable examples; filters reuse the canonical responsive dialog and existing form controls. Effort: M.
+- [x] PCM-003: Add controlled segmented selection, selection cards, quantity stepper, favorite button, media card and motion reveal. **Files:** `src/ds`, `styles`. **Done when:** Importable components share motion tokens, preserve semantics and work with reduced motion. Effort: L. Evidence: six package exports and scoped CSS module, shared motion tokens, focused behavior tests and typecheck.
+- [x] PCM-004: Compose an interactive premium workbench and component state stories. **Files:** `stories/premium`, catalog welcome. **Done when:** Each component has usable examples; filters reuse the canonical responsive dialog and existing form controls. Effort: M. Evidence: Collection plus six focused stories, static build and 375/768/1440 light/dark rendering.
 
 Gate: Components contain no app data/provider dependencies; motion is optional and state remains legible without it.
 

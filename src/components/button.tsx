@@ -9,7 +9,7 @@ export const buttonDisabledStateClasses =
   "disabled:pointer-events-none disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:shadow-none disabled:opacity-100 disabled:hover:border-border disabled:hover:bg-muted disabled:hover:text-muted-foreground disabled:active:translate-y-0"
 
 const buttonVariants = cva(
-  `inline-flex shrink-0 items-center justify-center gap-1.5 rounded-[var(--button-radius)] text-sm font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform] duration-150 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 ${buttonDisabledStateClasses} aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 data-[placeholder-style]:text-[hsl(var(--input-placeholder))] active:translate-y-px [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-']):not([class*='h-']):not([class*='w-'])]:size-4`,
+  `inline-flex shrink-0 items-center justify-center gap-1.5 rounded-[var(--button-radius)] text-sm font-medium whitespace-nowrap motion-reduce:transition-none motion-reduce:active:translate-y-0 transition-[background-color,border-color,color,box-shadow,transform] duration-150 outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 ${buttonDisabledStateClasses} aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 data-[placeholder-style]:text-[hsl(var(--input-placeholder))] active:translate-y-px [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-']):not([class*='h-']):not([class*='w-'])]:size-4`,
   {
     variants: {
       variant: {

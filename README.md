@@ -59,6 +59,36 @@ Dark mode is the `.dark` class on an ancestor (next-themes `attribute="class"`).
 
 ## What is in it
 
+### Premium interaction collection (v0.8.0)
+
+Open **Premium → Interaction library → Collection** in Storybook for the composed example, or select an individual component story. Based on the inspected [Airbnb filter flow](https://mobbin.com/flows/c88c5d8a-56ab-4823-87fc-7ed6f335c0fd), with Alleato tokens and our own maintained motion values. This is an inspired web implementation, not Airbnb's source library or an exact animation capture.
+
+| Import under `@alleato/ui/ds/` | Component | Host supplies |
+| --- | --- | --- |
+| `segmented-control` | `SegmentedControl` | Named options, selected value, change callback; Radix radio semantics and arrow keys are shared. |
+| `selection-card` | `SelectionCard` | Label, optional description/icon, selected state and callback. Independent toggle semantics. |
+| `quantity-stepper` | `QuantityStepper` | Label, integer value, min/max (defaults 0/99), change callback. |
+| `favorite-button` | `FavoriteButton` | Stable accessible label, pressed state and callback. |
+| `media-card` | `MediaCard` | Image/alt, title, destination and optional metadata, badge/action slots. The action is separate from the link. |
+| `motion-reveal` | `MotionReveal` | Content and optional stagger index (bounded 0–6). Change its React key to replay. |
+
+```tsx
+import { SegmentedControl } from "@alleato/ui/ds/segmented-control";
+import { SelectionCard } from "@alleato/ui/ds/selection-card";
+
+<SegmentedControl
+  label="View"
+  options={[{ value: "all", label: "All" }, { value: "saved", label: "Saved" }]}
+  value={view}
+  onValueChange={setView}
+/>
+<SelectionCard label="Outside space" selected={garden} onSelectedChange={setGarden} />
+```
+
+No extra animation dependency is required. CSS modules ship with the source package; use the normal Tailwind/theme setup above. Shared `--motion-*` tokens in `tokens.css` own timing, easing, press feedback and reveal distance. `prefers-reduced-motion` removes the kit's movement and delays. Existing button, switch, accordion and dialog/sheet motion also respect reduced motion. The example composes the existing responsive `Dialog`, `ExpandingSearch`, `Switch`, `Checkbox`, and `Accordion`; it does not introduce alternate owners for them.
+
+The collection contains sample data and local interaction state. It does not persist favorites, book stays, or establish adoption in an application. These exports are React web components; React Native needs its own adapter/implementation.
+
 - `styles/tokens.css` — every variable, light on `:root`, dark on `.dark`.
   Plain CSS; colors are bare HSL triplets so `hsl(var(--primary) / 0.12)` works.
 - `styles/base.css` — element defaults (ink, ground, field fill, placeholders,

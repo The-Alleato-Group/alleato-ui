@@ -1,0 +1,119 @@
+.control {
+  transition:
+    background-color var(--motion-fast) var(--motion-ease),
+    border-color var(--motion-fast) var(--motion-ease),
+    box-shadow var(--motion-fast) var(--motion-ease),
+    transform var(--motion-fast) var(--motion-ease);
+}
+.control:active:not(:disabled) {
+  transform: scale(var(--motion-press-scale));
+}
+.segments {
+  position: relative;
+  display: flex;
+  isolation: isolate;
+}
+.indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background: hsl(var(--background));
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--motion-settle) var(--motion-ease);
+}
+.segment {
+  position: relative;
+  z-index: 1;
+  flex: 1 0 auto;
+}
+.choice[data-selected="true"] {
+  border-color: hsl(var(--foreground));
+  background: hsl(var(--muted));
+  box-shadow: inset 0 0 0 1px hsl(var(--foreground));
+}
+.choiceIcon {
+  transition: transform var(--motion-settle) var(--motion-ease);
+}
+.choice[data-selected="true"] .choiceIcon {
+  transform: translateY(calc(-1 * var(--motion-lift)));
+}
+.favorite[aria-pressed="true"] svg {
+  fill: currentColor;
+  animation: favorite-pop var(--motion-settle) var(--motion-ease);
+}
+.count {
+  animation: count-in var(--motion-fast) var(--motion-ease);
+}
+.media {
+  position: relative;
+}
+.image {
+  transition: transform var(--motion-reveal) var(--motion-ease);
+}
+.media:focus-within .image {
+  transform: scale(var(--motion-image-scale));
+}
+.reveal {
+  animation: reveal var(--motion-reveal) var(--motion-ease) both;
+  animation-delay: calc(var(--motion-index, 0) * var(--motion-stagger));
+}
+@media (hover: hover) {
+  .choice:hover:not(:disabled) {
+    border-color: hsl(var(--foreground));
+  }
+  .media:hover .image {
+    transform: scale(var(--motion-image-scale));
+  }
+}
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-distance));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes favorite-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(var(--motion-pop-scale));
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes count-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-lift));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .control,
+  .indicator,
+  .choiceIcon,
+  .image {
+    transition: none;
+  }
+  .reveal,
+  .count,
+  .favorite[aria-pressed="true"] svg {
+    animation: none;
+  }
+  .control:active:not(:disabled),
+  .choice[data-selected="true"] .choiceIcon,
+  .media:hover .image,
+  .media:focus-within .image {
+    transform: none;
+  }
+}
