@@ -1,7 +1,7 @@
 ---
 title: Premium shared components and motion
 id_prefix: PCM
-status: in-progress
+status: done
 project: alleato-ui
 created: 2026-11-17
 updated: 2026-11-17
@@ -29,7 +29,7 @@ Gate: Components contain no app data/provider dependencies; motion is optional a
 ## P2 — Verify and release
 
 - [x] PCM-005: Verify behavior, rendering, keyboard and reduced motion. **Files:** `test`, browser evidence. **Done when:** Focused behavior tests, typecheck, suite and catalog build pass; light/dark at 375/768/1440 render and interactions/focus are checked. Effort: M. Evidence: typecheck; 344 tests across 19 files; static build with 142 stories; Chromium light/dark at 375/768/1440; filter apply/reset/cancel, saved toggles, keyboard radio selection, focus return, phone geometry and broken-image fallback passed.
-- [ ] PCM-006: Merge and publish a versioned shared package. **Files:** package version, README, workflow. **Done when:** Remote main contains the changes, release workflow passes and tag/release readback succeeds. Effort: S.
+- [x] PCM-006: Merge and publish a versioned shared package. **Files:** package version, README, workflow. **Done when:** Remote main contains the changes, release workflow passes and tag/release readback succeeds. Effort: S. Evidence: PR #31 merged as b04fffdf0746dec7c904d397fc75c9ac09389fc9; main CI 44150918621 and Release 44150944156 passed; v0.8.0 read back as published and not draft.
 
 Gate: Report source release separately from app adoption or hosted catalog deployment.
 
@@ -55,3 +55,5 @@ Gate: Report source release separately from app adoption or hosted catalog deplo
 - 2026-11-17: Inspected current remote main and isolated catalog checkout; rebased catalog onto f1f7775. Existing dirty checkouts preserved.
 
 - 2026-11-17: Implemented and pushed d40a9f1. Full package checks, rendered interaction checks and archive inspection passed. Source publication remains separate from application adoption.
+
+- 2026-11-17: Published [v0.8.0](https://github.com/The-Alleato-Group/alleato-ui/releases/tag/v0.8.0) from b04fffd. [Release workflow](https://github.com/The-Alleato-Group/alleato-ui/actions/runs/44150944156) and main CI passed. Persistent sample screenshots are in `docs/tasks/evidence/premium-components/`. Consumer rollout and hosted catalog deployment are separate from this source-package delivery.
