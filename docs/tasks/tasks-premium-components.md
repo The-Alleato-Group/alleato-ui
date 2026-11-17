@@ -28,7 +28,7 @@ Gate: Components contain no app data/provider dependencies; motion is optional a
 
 ## P2 — Verify and release
 
-- [ ] PCM-005: Verify behavior, rendering, keyboard and reduced motion. **Files:** `test`, browser evidence. **Done when:** Focused behavior tests, typecheck, suite and catalog build pass; light/dark at 375/768/1440 render and interactions/focus are checked. Effort: M.
+- [x] PCM-005: Verify behavior, rendering, keyboard and reduced motion. **Files:** `test`, browser evidence. **Done when:** Focused behavior tests, typecheck, suite and catalog build pass; light/dark at 375/768/1440 render and interactions/focus are checked. Effort: M. Evidence: typecheck; 344 tests across 19 files; static build with 142 stories; Chromium light/dark at 375/768/1440; filter apply/reset/cancel, saved toggles, keyboard radio selection, focus return, phone geometry and broken-image fallback passed.
 - [ ] PCM-006: Merge and publish a versioned shared package. **Files:** package version, README, workflow. **Done when:** Remote main contains the changes, release workflow passes and tag/release readback succeeds. Effort: S.
 
 Gate: Report source release separately from app adoption or hosted catalog deployment.
@@ -41,6 +41,17 @@ Gate: Report source release separately from app adoption or hosted catalog deplo
 - Preserve existing Alleato branding and the owner-approved stationary desktop dialog fade. New components use scoped CSS modules; no global redesign of consumer applications.
 - Web React exports only. Native ports and deployed consumer adoption require their own implementation and verification.
 
+## Verification details
+
+- Package archive contains all six public components, CSS module and motion tokens. No extra animation dependency.
+- UI-R01/R03: pass for the inspected collection at 375/768/1440; no page/descendant horizontal overflow. UI-C02: all new controls have at least 44px targets. UI-C03/C04/C06/C07/C09: names, keyboard selection, dismiss/focus restoration, semantic states and bottom-attached full-width phone sheet verified in Chromium.
+- Reduced motion: reveal/favorite animation names are `none`. Indicator, Switch and Dialog durations are at most 0.01ms because the existing global reduced-motion rule uses an important duration override. Dialog retains the `enter` animation name; it is effectively instantaneous, not a literal `animation: none` result.
+- `pnpm check:ui` is not configured in alleato-ui (`ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL`). The MKH checkout's required checker separately passed (0 new findings), but that checker does not scan this shared repository. Source hooks found no issues in the new CSS after replacing overshoot easing and removing dimension transitions. Existing legacy spring tokens were preserved for existing consumers.
+- Full WCAG certification, VoiceOver/TalkBack, device keyboard/zoom checks, React Native ports and deployed app adoption are not claimed.
+- Local browser script/log: `/tmp/verify-premium.cjs`, `/tmp/alleato-premium-browser.log`; screenshots `/tmp/alleato-premium-{light,dark}-{375,768,1440}.png`. A standalone static copy serves the reviewed artifact at http://localhost:6018/?path=/story/premium-interaction-library--collection.
+
 ## Log
 
 - 2026-11-17: Inspected current remote main and isolated catalog checkout; rebased catalog onto f1f7775. Existing dirty checkouts preserved.
+
+- 2026-11-17: Implemented and pushed d40a9f1. Full package checks, rendered interaction checks and archive inspection passed. Source publication remains separate from application adoption.
