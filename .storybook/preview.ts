@@ -14,7 +14,7 @@ export default {
     controls: { sort: "requiredFirst" },
     options: {
       storySort: {
-        order: ["Start here", "Components", "Patterns", "Layouts", "Tables"],
+        order: ["Start here", "Premium", "Components", "Patterns", "Layouts", "Tables"],
       },
     },
   },

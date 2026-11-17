@@ -341,6 +341,18 @@
     --duration-normal: 250ms;
     --duration-slow: 400ms;
 
+    /* Premium interaction kit. Maintained timings, not sampled vendor values. */
+    --motion-fast: 150ms;
+    --motion-settle: 280ms;
+    --motion-reveal: 400ms;
+    --motion-stagger: 45ms;
+    --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --motion-press-scale: 0.97;
+    --motion-pop-scale: 1.2;
+    --motion-image-scale: 1.035;
+    --motion-lift: 2px;
+    --motion-distance: 12px;
+
     /* ================================================================
        COMPONENT-LEVEL TOKENS
        These reference semantic tokens above, so they auto-adapt to
